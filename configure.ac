@@ -605,6 +605,64 @@ AC_SUBST([POSTGIS_GEOS_VERSION])
 
 
 dnl ===========================================================================
+dnl SFCGAL library support
+dnl ===========================================================================
+
+dnl ===========================================================================
+dnl
+dnl Selection of the geometric backend.
+dnl Geos is still needed for now.
+dnl
+dnl ===========================================================================
+
+AC_ARG_WITH([sfcgal], AC_HELP_STRING([--with-sfcgal], [add SFCGAL functions]), 
+	[POSTGIS_SFCGAL=1], [POSTGIS_SFCGAL=0])
+
+AC_SUBST([POSTGIS_SFCGAL])
+
+dnl ===========================================================================
+dnl SFCGAL library
+dnl ===========================================================================
+
+AC_ARG_WITH([sfcgaldir], 
+	[AS_HELP_STRING([--with-sfcgaldir=PATH], [specify the SFCGAL installation directory])], 
+	[SFCGALDIR="$withval"], [SFCGALDIR="/usr/local"])
+
+if test -d "$SFCGALDIR"; then
+	AC_MSG_RESULT([Using SFCGAL directory: $SFCGALDIR])
+	dnl Add the include directory to SFCGAL_CPPFLAGS	
+	SFCGAL_CPPFLAGS="-I$SFCGALDIR/include"
+	# Use RUNPATH
+	SFCGAL_LDFLAGS="-L$SFCGALDIR/lib -Wl,-rpath=$SFCGALDIR/lib,--enable-new-dtags"
+else
+	AC_MSG_ERROR([the --with-sfcgaldir directory "$SFCGALDIR" cannot be found]) 
+fi
+
+AC_SUBST([SFCGAL_CPPFLAGS])
+AC_SUBST([SFCGAL_LDFLAGS])
+
+dnl ===========================================================================
+dnl SFCGAL compilation mode
+dnl ===========================================================================
+
+AC_ARG_ENABLE([debug-sfcgal], AC_HELP_STRING([--enable-debug-sfcgal], [Use SFCGAL in debug mode]), 
+	[SFCGAL_MODE=Debug], [SFCGAL_MODE=Release]) 
+
+if test "x$SFCGAL_MODE" = "xDebug"; then
+   SFCGAL_CPPFLAGS+=" -frounding-math"
+   POSTGIS_SFCGAL_OBJS="lwgeom_sfcgal.o"
+   SFCGAL_LDFLAGS+=" -lSFCGALd"
+else
+   SFCGAL_CPPFLAGS+=" -frounding-math"
+   POSTGIS_SFCGAL_OBJS="lwgeom_sfcgal.o"
+   SFCGAL_LDFLAGS+=" -lSFCGAL"
+fi
+
+AC_SUBST(POSTGIS_SFCGAL_OBJS, $POSTGIS_SFCGAL_OBJS)
+AC_SUBST(SFCGAL_CPPFLAGS, $SFCGAL_CPPFLAGS)
+AC_SUBST(SFCGAL_LDFLAGS, $SFCGAL_LDFLAGS)
+
+dnl ===========================================================================
 dnl Detect gettext
 dnl ===========================================================================
 
@@ -1079,6 +1137,7 @@ else
 	RT_MAKEFILE_LIST="raster/Makefile"
 fi
 
+
 dnl ===========================================================================
 dnl See if we have the requirements for building the extensions, namely
 dnl PostgreSQL 9.1 or better and the xlstproc tool for generating the commends
@@ -1171,6 +1230,13 @@ if test "x$TOPOLOGY" = "xtopology"; then
     AC_MSG_RESULT([  PostGIS Topology:     enabled])
 else
     AC_MSG_RESULT([  PostGIS Topology:     disabled])
+fi
+if test "x$POSTGIS_SFCGAL" = "x1"; then
+    AC_MSG_RESULT([  SFCGAL support:       yes])
+    AC_MSG_RESULT([  SFCGAL directory:     ${SFCGALDIR}])
+    AC_MSG_RESULT([  SFCGAL mode:          ${SFCGAL_MODE}])
+else
+    AC_MSG_RESULT([  SFCGAL support:       no])
 fi
 AC_MSG_RESULT()
 AC_MSG_RESULT([ -------- Documentation Generation -------- ])

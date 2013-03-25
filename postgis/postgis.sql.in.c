@@ -98,7 +98,9 @@ CREATE TYPE geometry (
 	delimiter = ':',
 	alignment = double,
 	analyze = geometry_analyze,
-	storage = main
+	storage = main,
+	category = 'G',
+	preferred = true
 );
 
 
@@ -5132,4 +5134,9 @@ CREATE OR REPLACE FUNCTION ST_AsX3D(geom geometry, maxdecimaldigits integer DEFA
 GRANT SELECT ON TABLE geography_columns TO public;
 GRANT SELECT ON TABLE geometry_columns TO public;
 GRANT SELECT ON TABLE spatial_ref_sys TO public;
+
+#ifdef POSTGIS_SFCGAL
+#include "postgis_sfcgal.sql.in.c"
+#endif
+
 COMMIT;
