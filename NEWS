@@ -27,6 +27,9 @@ PostGIS 2.1.0
            ST_Raster2WorldCoordY renamed to ST_RasterToWorldCoord,
            ST_RasterToWorldCoordX and ST_RasterToWorldCoordY
   - ST_Estimated_Extent renamed to ST_EstimatedExtent
+  - ST_Line_Interpolate_Point renamed to ST_LineInterpolatePoint
+  - ST_Line_Substring renamed to ST_LineSubstring
+  - ST_Line_Locate_Point renamed to ST_LineLocatePoint
   - ST_MapAlgebraFctNgb and 1 and 2 raster variants of ST_MapAlgebraFct.
     Use ST_MapAlgebra instead
   - 1 and 2 raster variants of ST_MapAlgebraExpr.
@@ -67,6 +70,11 @@ PostGIS 2.1.0
   - #1293, ST_Resize(raster) to resize rasters based upon width/height
   - #945, improved join selectivity, N-D selectivity calculations, user
     accessible selectivity and stats reader functions for testing
+  - #2210, ST_MinConvexHull(raster)
+  - lwgeom_from_geojson in liblwgeom (Sandro Santilli / Vizzuality)
+  - #1687, ST_Simplify for TopoGeometry (Sandro Santilli / Vizzuality)
+  - #2228, TopoJSON output for TopoGeometry (Sandro Santilli / Vizzuality)
+  - #2123, ST_FromGDALRaster
 
 * Enhancements *
   - #823,  tiger geocoder: Make loader_generate_script download portion 
@@ -113,6 +121,8 @@ PostGIS 2.1.0
   - Proper support for raster band's isnodata flag in core API and loader.
   - Additional default values for parameters of ST_Aspect and ST_HillShade
   - #2178, ST_Summary now advertises presence of known srid with an [S] flag
+  - #2202, Make libjson-c optional (--without-json configure switch)
+  - #2231, raster2pgsql supports user naming of filename column with -n
 
 * Fixes *
 
@@ -142,6 +152,10 @@ PostGIS 2.1.0
            when copying data from a GDAL dataset
   - #2198, Fix incorrect dimensions used when generating bands of out-db
            rasters in ST_Tile()
+  - #2203, Changed how rasters with unknown SRID and default geotransform
+           are handled when passing to GDAL Warp API
+  - #2215, Fixed raster exclusion constraint for conflicting name of
+           implicit index
 
 PostGIS 2.0.3
 2013/MM/DD

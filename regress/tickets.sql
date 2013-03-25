@@ -474,6 +474,11 @@ select '#877.5', round(st_xmin(e.e)::numeric, 5), round(st_xmax(e.e)::numeric, 5
 round(st_ymin(e.e)::numeric, 5), round(st_ymax(e.e)::numeric, 5) from e;
 drop table t;
 
+-- #1292
+SELECT '#1292', ST_AsText(ST_SnapToGrid(ST_GeomFromText(
+	'GEOMETRYCOLLECTION(POINT(180 90),POLYGON((140 50,150 50,180 50,140 50),(140 60,150 60,180 60,140 60)))'
+	, 4326), 0.00001)::geography);
+
 -- #1320
 SELECT '<#1320>';
 CREATE TABLE A ( geom geometry(MultiPolygon, 4326),
@@ -799,8 +804,12 @@ FROM (SELECT 'POLYGON((1 1 1, 5 1 1,5 5 1, 1 5 1,1 1 1))'::geometry as a, 'LINES
      ) as foo;
 -- 2112 -- End
 
-SELECT '#2108', ST_AsEWKT(ST_Line_Interpolate_Point('SRID=3395;LINESTRING M EMPTY'::geometry, 0.5));
+SELECT '#2108', ST_AsEWKT(ST_LineInterpolatePoint('SRID=3395;LINESTRING M EMPTY'::geometry, 0.5));
 SELECT '#2117', ST_AsEWKT(ST_PointOnSurface('SRID=3395;MULTIPOLYGON M EMPTY'::geometry));
+
+SELECT '#2110.1', 'POINT(0 0)'::geometry = 'POINT EMPTY'::geometry;
+SELECT '#2110.2', 'POINT EMPTY'::geometry = 'POINT EMPTY'::geometry;
+SELECT '#2110.3', 'POINT(0 0)'::geometry = 'POINT(0 0)'::geometry;
 
 
 SELECT '#2145',

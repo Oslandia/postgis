@@ -1772,7 +1772,78 @@ FROM baz;
 
 		</refentry>
 
-  	</sect1>
+		<refentry id="RT_ST_FromGDALRaster">
+
+			<refnamediv>
+				<refname>ST_FromGDALRaster</refname>
+				<refpurpose>Returns a raster from a supported GDAL raster file.</refpurpose>
+			</refnamediv>
+
+			<refsynopsisdiv>
+				<funcsynopsis>
+					<funcprototype>
+						<funcdef>raster <function>ST_FromGDALRaster</function></funcdef>
+						<paramdef><type>bytea </type> <parameter>gdaldata</parameter></paramdef>
+						<paramdef choice="opt"><type>integer </type> <parameter>srid=NULL</parameter></paramdef>
+					</funcprototype>
+
+				</funcsynopsis>
+			</refsynopsisdiv>
+
+			<refsection>
+				<title>Description</title>
+
+				<para>
+					Returns a raster from a supported GDAL raster file. <varname>gdaldata</varname> is of type bytea and should be the contents of the GDAL raster file.
+				</para>
+
+				<para>
+					If <varname>srid</varname> is NULL, the function will try to autmatically assign the SRID from the GDAL raster. If <varname>srid</varname> is provided, the value provided will override any automatically assigned SRID.
+				</para>
+
+				<para>Availability: 2.1.0</para>
+			</refsection>
+
+			<refsection>
+				<title>Examples</title>
+
+				<programlisting>
+WITH foo AS (
+	SELECT ST_AsPNG(ST_AddBand(ST_AddBand(ST_AddBand(ST_MakeEmptyRaster(2, 2, 0, 0, 0.1, -0.1, 0, 0, 4326), 1, '8BUI', 1, 0), 2, '8BUI', 2, 0), 3, '8BUI', 3, 0)) AS png
+),
+bar AS (
+	SELECT 1 AS rid, ST_FromGDALRaster(png) AS rast FROM foo
+	UNION ALL
+	SELECT 2 AS rid, ST_FromGDALRaster(png, 3310) AS rast FROM foo
+)
+SELECT
+	rid,
+	ST_Metadata(rast) AS metadata,
+	ST_SummaryStats(rast, 1) AS stats1,
+	ST_SummaryStats(rast, 2) AS stats2,
+	ST_SummaryStats(rast, 3) AS stats3
+FROM bar
+ORDER BY rid;
+
+ rid |         metadata          |    stats1     |    stats2     |     stats3     
+-----+---------------------------+---------------+---------------+----------------
+   1 | (0,0,2,2,1,-1,0,0,0,3)    | (4,4,1,0,1,1) | (4,8,2,0,2,2) | (4,12,3,0,3,3)
+   2 | (0,0,2,2,1,-1,0,0,3310,3) | (4,4,1,0,1,1) | (4,8,2,0,2,2) | (4,12,3,0,3,3)
+(2 rows)
+				</programlisting>
+
+			</refsection>
+
+			<refsection>
+				<title>See Also</title>
+				<para>
+					<xref linkend="RT_ST_AsGDALRaster" />
+				</para>
+			</refsection>
+
+		</refentry>
+
+ 	</sect1>
 	<sect1 id="Raster_Accessors">
 		<title>Raster Accessors</title>
 	
@@ -7078,7 +7149,7 @@ FROM dummy_rast WHERE rid=1;
 					<programlisting>SELECT ST_AsGDALRaster(rast, 'JPEG') As rastjpg
 FROM dummy_rast WHERE rid=1;
 
-SELECT ST_AsGDALRaster(rast, 'JPEG', ARRAY!['QUALITY=50']) As rastjpg
+SELECT ST_AsGDALRaster(rast, 'JPEG', ARRAY['QUALITY=50']) As rastjpg
 FROM dummy_rast WHERE rid=2;
 				</programlisting>
 			
@@ -7731,30 +7802,17 @@ WHERE rid = 4;
 				
 			<refsection>
 				<title>Examples</title>
-				<para>Refer to <ulink url="http://trac.osgeo.org/postgis/wiki/WKTRaster/SpecificationWorking01">PostGIS Raster Specification</ulink>
-					 for a diagram of this.</para>
-				<informaltable>
-				  <tgroup cols="1">
-					<tbody>
-				<row>
-					<entry>
-							<para> <!-- TODO: Put in pictures -->
-<programlisting>-- Note envelope and convexhull are more or less the same
+				<para>Refer to <ulink url="http://trac.osgeo.org/postgis/wiki/WKTRaster/SpecificationWorking01">PostGIS Raster Specification</ulink> for a diagram of this.</para>
+				<programlisting>
+-- Note envelope and convexhull are more or less the same
 SELECT ST_AsText(ST_ConvexHull(rast)) As convhull, 
 	ST_AsText(ST_Envelope(rast)) As env
 FROM dummy_rast WHERE rid=1;
 
                         convhull                        |                env
-
---------------------------------------------------------+-----------------------
+--------------------------------------------------------+------------------------------------
  POLYGON((0.5 0.5,20.5 0.5,20.5 60.5,0.5 60.5,0.5 0.5)) | POLYGON((0 0,20 0,20 60,0 60,0 0))
- </programlisting>
-						</para>
-					</entry>
-				</row>
-				<row>
-					<entry>
-						<para> <!-- TODO: Put in pictures -->
+				</programlisting>
 				<programlisting> 
 -- now we skew the raster 
 -- note how the convex hull and envelope are now different
@@ -7764,25 +7822,109 @@ FROM (SELECT ST_SetRotation(rast, 0.1, 0.1) As rast
 	FROM dummy_rast WHERE rid=1) As foo;
 	
                         convhull                        |                env
-
 --------------------------------------------------------+------------------------------------
  POLYGON((0.5 0.5,20.5 1.5,22.5 61.5,2.5 60.5,0.5 0.5)) | POLYGON((0 0,22 0,22 61,0 61,0 0))
 				</programlisting>
-						</para>
-					</entry>
-			</row>
-		</tbody>
-		</tgroup>
-		</informaltable>
 			</refsection>
 		
 			<!-- Optionally add a "See Also" section -->
 			<refsection>
 				<title>See Also</title>
-				<para><xref linkend="RT_ST_Envelope" />, <xref linkend="ST_ConvexHull" />, <xref linkend="ST_AsText" /></para>
+				<para>
+					<xref linkend="RT_ST_Envelope" />,
+					<xref linkend="RT_ST_MinConvexHull" />,
+					<xref linkend="ST_ConvexHull" />,
+					<xref linkend="ST_AsText" />
+				</para>
 			</refsection>
 		</refentry>
+
+		<refentry id="RT_ST_MinConvexHull">
+			<refnamediv>
+				<refname>ST_MinConvexHull</refname>
+				<refpurpose>
+					Return the convex hull geometry of the raster excluding NODATA pixels.</refpurpose>
+			</refnamediv>
+
+			<refsynopsisdiv>
+				<funcsynopsis>
+					<funcprototype>
+						<funcdef>geometry <function>ST_MinConvexHull</function></funcdef>
+						<paramdef><type>raster </type> <parameter>rast</parameter></paramdef>
+						<paramdef choice="opt"><type>integer </type> <parameter>nband=NULL</parameter></paramdef>
+					</funcprototype>
+				</funcsynopsis>
+			</refsynopsisdiv>
+
+			<refsection>
+				<title>Description</title>
+
+				<para>
+					Return the convex hull geometry of the raster excluding NODATA pixels.  If <varname>nband</varname> is NULL, all bands of the raster are considered.
+				</para>
+				
+				<para>Availability: 2.1.0 </para>
+			</refsection>
+
+			<refsection>
+				<title>Examples</title>
+				<programlisting>
+WITH foo AS (
+	SELECT
+		ST_SetValues(
+			ST_SetValues(
+				ST_AddBand(ST_AddBand(ST_MakeEmptyRaster(9, 9, 0, 0, 1, -1, 0, 0, 0), 1, '8BUI', 0, 0), 2, '8BUI', 1, 0),
+				1, 1, 1,
+				ARRAY[
+					[0, 0, 0, 0, 0, 0, 0, 0, 0],
+					[0, 0, 0, 0, 0, 0, 0, 0, 0],
+					[0, 0, 0, 0, 0, 0, 0, 0, 0],
+					[0, 0, 0, 1, 0, 0, 0, 0, 1],
+					[0, 0, 0, 1, 1, 0, 0, 0, 0],
+					[0, 0, 0, 1, 0, 0, 0, 0, 0],
+					[0, 0, 0, 0, 0, 0, 0, 0, 0],
+					[0, 0, 0, 0, 0, 0, 0, 0, 0],
+					[0, 0, 0, 0, 0, 0, 0, 0, 0]
+				]::double precision[][]
+			),
+			2, 1, 1,
+			ARRAY[
+				[0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[1, 0, 0, 0, 0, 1, 0, 0, 0],
+				[0, 0, 0, 0, 1, 1, 0, 0, 0],
+				[0, 0, 0, 0, 0, 1, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 0, 1, 0, 0, 0, 0, 0, 0]
+			]::double precision[][]
+		) AS rast
+)
+SELECT
+	ST_AsText(ST_ConvexHull(rast)) AS hull,
+	ST_AsText(ST_MinConvexHull(rast)) AS mhull,
+	ST_AsText(ST_MinConvexHull(rast, 1)) AS mhull_1,
+	ST_AsText(ST_MinConvexHull(rast, 2)) AS mhull_2
+FROM foo
+
+               hull               |                mhull                |               mhull_1               |               mhull_2               
+----------------------------------+-------------------------------------+-------------------------------------+-------------------------------------
+ POLYGON((0 0,9 0,9 -9,0 -9,0 0)) | POLYGON((0 -3,9 -3,9 -9,0 -9,0 -3)) | POLYGON((3 -3,9 -3,9 -6,3 -6,3 -3)) | POLYGON((0 -3,6 -3,6 -9,0 -9,0 -3))
+				</programlisting>
+			</refsection>
 		
+			<refsection>
+				<title>See Also</title>
+				<para>
+					<xref linkend="RT_ST_Envelope" />,
+					<xref linkend="RT_ST_ConvexHull" />,
+					<xref linkend="ST_ConvexHull" />,
+					<xref linkend="ST_AsText" />
+				</para>
+			</refsection>
+		</refentry>
+
 		<refentry id="RT_ST_DumpAsPolygons">
 		  <refnamediv>
 			<refname>ST_DumpAsPolygons</refname>
@@ -8517,8 +8659,19 @@ WHERE A.rid =2 ) As foo;
 				<para>
 					Returns a one-band raster given one or more input rasters, band indexes and one user-specified callback function.
 				</para>
-
-				<para>
+				
+				<variablelist>
+					<varlistentry>
+						<term>rast,rast1,rast2, rastbandargset</term>
+						<listitem><para>Rasters on which the map algebra process is evaluated.</para><para><varname>rastbandargset</varname> allows the use of a map algebra operation on many rasters and/or many bands. See example Variant 1.</para></listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>nband, nband1, nband2</term>
+						<listitem><para>Band numbers of the raster to be evaluated. nband can be an integer or integer[] denoting the bands. nband1 is band on rast1 and nband2 is band on rast2 for hte 2 raster/2band case.</para></listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>callbackfunc</term>
+							<listitem><para>
 					The <varname>callbackfunc</varname> parameter must be the name and signature of an SQL or PL/pgSQL function, cast to a regprocedure. An example PL/pgSQL function example is:
 					<programlisting>
 CREATE OR REPLACE FUNCTION sample_callbackfunc(value double precision[][][], position integer[][], VARIADIC userargs text[])
@@ -8543,9 +8696,46 @@ CREATE OR REPLACE FUNCTION sample_callbackfunc(value double precision[][][], pos
 					Note that the argument contains the name of the function, the types of the function arguments, quotes around the name and argument types, and a cast to a <type>regprocedure</type>.
 				</para>
 
-				<para>
-					The third argument to the <varname>callbackfunc</varname> is a <type>variadic text</type> array. All trailing text arguments are passed through to the specified <varname>callbackfunc</varname>, and are contained in the <varname>userargs</varname> argument.
-				</para>
+						</listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>pixeltype</term>
+						<listitem><para>If <varname>pixeltype</varname> is passed in, the one band of the new raster will be of that pixeltype. If pixeltype is passed NULL or left out, the new raster band will have the same pixeltype as the specified band of the first raster (for extent types: INTERSECTION, UNION, FIRST, CUSTOM) or the specified band of the appropriate raster (for extent types: SECOND, LAST).  If in doubt, always specify <varname>pixeltype</varname>.</para>
+							<para>The resulting pixel type of the output raster must be one listed in <xref linkend="RT_ST_BandPixelType" /> or left out or set to NULL. </para></listitem>
+					</varlistentry>
+
+					<varlistentry>
+						<term>extenttype</term>
+						<listitem>
+							<para>Possible values are INTERSECTION (default), UNION, FIRST (default for one raster variants), SECOND, LAST, CUSTOM. </para>
+						</listitem>
+					</varlistentry>
+					
+					<varlistentry>
+						<term>customextent</term>
+						<listitem>
+							<para>If <varname>extentype</varname> is CUSTOM, a raster must be provided for <varname>customextent</varname>. See example 4 of Variant 1.</para>
+						</listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>distancex</term>
+						<listitem><para>The distance in pixels from the reference cell. So width of resulting matrix would be <code>2*distancex + 1</code>.If not specified only the reference cell is considered (neighborhood of 0).</para></listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>distancey</term>
+						<listitem><para>The distance in pixels from reference cell in y direction. Height of resulting matrix would be <code>2*distancey + 1</code> .If not specified only the reference cell is considered (neighborhood of 0).</para></listitem>
+					</varlistentry>
+
+					<varlistentry>
+						<term>userargs</term>
+						<listitem><para>
+					The third argument to the <varname>callbackfunc</varname> is a <type>variadic text</type> array. All trailing text arguments are passed through to the specified <varname>callbackfunc</varname>, and are contained in the <varname>userargs</varname> argument.</para>
+						</listitem>
+					</varlistentry>
+
+				</variablelist>
+
+				
 
 				<note>
 					<para>
@@ -8559,13 +8749,6 @@ CREATE OR REPLACE FUNCTION sample_callbackfunc(value double precision[][][], pos
 					</para>
 				</note>
 
-				<para>
-					If <varname>pixeltype</varname> is passed in, the one band of the new raster will be of that pixeltype. If pixeltype is passed NULL or left out, the new raster band will have the same pixeltype as the specified band of the first raster (for extent types: INTERSECTION, UNION, FIRST, CUSTOM) or the specified band of the appropriate raster (for extent types: SECOND, LAST).  If in doubt, always specify <varname>pixeltype</varname>.
-				</para>
-
-				<para>
-					Possible values for <varname>extenttype</varname> are: INTERSECTION (default), UNION, FIRST (default for one raster variants), SECOND, LAST, CUSTOM. If <varname>extentype</varname> is CUSTOM, a raster must be provided for <varname>customextent</varname>. See example 4 of Variant 1.
-				</para>
 
 				<para>
 					Variant 1 accepts an array of <varname>rastbandarg</varname> allowing the use of a map algebra operation on many rasters and/or many bands. See example Variant 1.
@@ -9999,7 +10182,7 @@ SELECT ST_MapAlgebraFct(m1.rast, 1, m1.rast, 3,
 						<term>args</term>
 						<listitem><para>Arguments to pass into the user function.</para></listitem>
 					</varlistentry>
-				</variablelist>
+			</variablelist>
 
 			<para>Availability: 2.0.0 </para>
 			
