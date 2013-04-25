@@ -38,3 +38,5 @@ typedef struct
 
 ref_object_t* serialize_ref_object( void * pgeom, bool nested, int type );
 void* unserialize_ref_object( ref_object_t * rgeom, int requested_type );
+
+#define POSTGIS_DETOAST_DATUM(x) unserialize_ref_object( PG_DETOAST_DATUM(x), -1 )

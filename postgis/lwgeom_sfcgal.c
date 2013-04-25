@@ -228,22 +228,22 @@ Datum sfcgal_orientation(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(sfcgal_intersects);
 Datum sfcgal_intersects(PG_FUNCTION_ARGS)
 {
-	ref_object_t *ref0, *ref1;
 	GSERIALIZED *input0, *input1;
 	sfcgal_geometry_t *geom0, *geom1;
 	int result;
 
 	sfcgal_postgis_init();
 
-	ref0 = (ref_object_t*) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
-	ref1 = (ref_object_t*) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
-	input0 = unserialize_ref_object( ref0, -1 );
-	input1 = unserialize_ref_object( ref1, -1 );
+	/* POSTGIS_DETOAST_DATUM forces serialization back to GSERIALIZED if the argument
+	   is a referenced object. PG_FREE_IF_COPY can safely be called on the returned pointer
+	*/
+	input0 = (GSERIALIZED*) POSTGIS_DETOAST_DATUM(PG_GETARG_DATUM(0));
+	input1 = (GSERIALIZED*) POSTGIS_DETOAST_DATUM(PG_GETARG_DATUM(1));
 
 	geom0 = POSTGIS2SFCGALGeometry(input0);
-	PG_FREE_IF_COPY(ref0, 0);
+	PG_FREE_IF_COPY(input0, 0);
 	geom1 = POSTGIS2SFCGALGeometry(input1);
-	PG_FREE_IF_COPY(ref1, 1);
+	PG_FREE_IF_COPY(input1, 1);
 
 	result = sfcgal_geometry_intersects(geom0, geom1);
 	sfcgal_geometry_delete(geom0);
