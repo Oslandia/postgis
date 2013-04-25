@@ -67,4 +67,12 @@ CREATE OR REPLACE FUNCTION ST_StraightSkeleton(geometry)
        LANGUAGE 'c' IMMUTABLE STRICT
        COST 100;
 
+CREATE OR REPLACE FUNCTION ST_Test(geometry)
+       RETURNS geometry
+       AS 'MODULE_PATHNAME','sfcgal_test'
+       LANGUAGE 'c' IMMUTABLE STRICT
+       COST 100;
+
+-- implicit cast from ref_geometry to geometry
+
 COMMIT;

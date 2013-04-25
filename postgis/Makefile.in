@@ -52,6 +52,7 @@ PG_OBJS= \
 	lwgeom_box.o \
 	lwgeom_box3d.o \
 	$(BACKEND_OBJ) \
+	lwgeom_ref.o \
 	lwgeom_backend_api.o \
 	lwgeom_geos_prepared.o \
 	lwgeom_geos_clean.o \

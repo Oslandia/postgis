@@ -120,6 +120,7 @@ Datum intersects(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(intersection);
 Datum intersection(PG_FUNCTION_ARGS)
 {
+    lwnotice("intersection switch");
     return (*lwgeom_backend->intersection_fn)( fcinfo );
 }
 

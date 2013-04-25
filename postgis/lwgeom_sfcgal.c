@@ -18,6 +18,7 @@
 
 #include "lwgeom_pg.h"
 #include "lwgeom_sfcgal.h"
+#include "lwgeom_ref.h"
 
 
 Datum postgis_sfcgal_version(PG_FUNCTION_ARGS);
@@ -114,7 +115,6 @@ GSERIALIZED* SFCGALPreparedGeometry2POSTGIS(const sfcgal_prepared_geometry_t* ge
     return SFCGALGeometry2POSTGIS(sfcgal_prepared_geometry_geometry(geom),
 		force3D, sfcgal_prepared_geometry_srid(geom));
 }
-
 
 /* Conversion from EWKT to GSERIALIZED */
 PG_FUNCTION_INFO_V1(sfcgal_from_ewkt);
@@ -222,18 +222,24 @@ Datum sfcgal_orientation(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(sfcgal_intersects);
 Datum sfcgal_intersects(PG_FUNCTION_ARGS)
 {
+	ref_object_t *ref0, *ref1;
 	GSERIALIZED *input0, *input1;
 	sfcgal_geometry_t *geom0, *geom1;
 	int result;
 
+	lwnotice("sfcgal_intersects");
+
 	sfcgal_postgis_init();
 
-	input0 = (GSERIALIZED*) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
-	input1 = (GSERIALIZED*) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+	ref0 = (ref_object_t*) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+	ref1 = (ref_object_t*) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+	input0 = unserialize_ref_object( ref0, -1 );
+	input1 = unserialize_ref_object( ref1, -1 );
+
 	geom0 = POSTGIS2SFCGALGeometry(input0);
-	PG_FREE_IF_COPY(input0, 0);
+	PG_FREE_IF_COPY(ref0, 0);
 	geom1 = POSTGIS2SFCGALGeometry(input1);
-	PG_FREE_IF_COPY(input1, 1);
+	PG_FREE_IF_COPY(ref1, 1);
 
 	result = sfcgal_geometry_intersects(geom0, geom1);
 	sfcgal_geometry_delete(geom0);
@@ -418,13 +424,20 @@ Datum sfcgal_straight_skeleton(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(sfcgal_intersection);	
 Datum sfcgal_intersection(PG_FUNCTION_ARGS)
 {
+#if 0
 	GSERIALIZED *input0, *input1, *output;
-	sfcgal_geometry_t *geom0, *geom1;
+#endif
+	ref_object_t *output;
+	sfcgal_prepared_geometry_t *pgeom0, *pgeom1, *presult;
+	const sfcgal_geometry_t *geom0, *geom1;
 	sfcgal_geometry_t *result;
 	srid_t srid;
 
+	lwnotice("sfcgal intersection");
+
 	sfcgal_postgis_init();
 
+#if 0
 	input0 = (GSERIALIZED*) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
 	srid = gserialized_get_srid(input0);
 	input1 = (GSERIALIZED*) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
@@ -432,14 +445,24 @@ Datum sfcgal_intersection(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(input0, 0);
 	geom1 = POSTGIS2SFCGALGeometry(input1);
 	PG_FREE_IF_COPY(input1, 1);
+#endif
+	
+	pgeom0 = (sfcgal_prepared_geometry_t *)unserialize_ref_object( PG_GETARG_DATUM(0), REF_TYPE_SFCGALGEOMETRY );
+	pgeom1 = (sfcgal_prepared_geometry_t *)unserialize_ref_object( PG_GETARG_DATUM(1), REF_TYPE_SFCGALGEOMETRY );
+
+	srid = sfcgal_prepared_geometry_srid( pgeom0 );
+
+	geom0 = sfcgal_prepared_geometry_geometry( pgeom0 );
+	geom1 = sfcgal_prepared_geometry_geometry( pgeom1 );
 
 	result = sfcgal_geometry_intersection(geom0, geom1);
-	sfcgal_geometry_delete(geom0);
-	sfcgal_geometry_delete(geom1);
 
-	output = SFCGALGeometry2POSTGIS(result, 0, srid);
-	sfcgal_geometry_delete(result);
+	sfcgal_prepared_geometry_delete(pgeom0);
+	sfcgal_prepared_geometry_delete(pgeom1);
 
+	presult = sfcgal_prepared_geometry_create_from_geometry( result, srid );
+
+	output = serialize_ref_object( presult, fcinfo->nested, REF_TYPE_SFCGALGEOMETRY );
 	PG_RETURN_POINTER(output);
 }
 
@@ -540,3 +563,20 @@ Datum postgis_sfcgal_version(PG_FUNCTION_ARGS)
         PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(sfcgal_test);
+Datum sfcgal_test(PG_FUNCTION_ARGS)
+{
+    ref_object_t *input0, *sgeom;
+    sfcgal_prepared_geometry_t *pgeom0;
+
+    lwnotice("fcinfo: %p", fcinfo );
+    lwnotice("fcinfo->nested: %d", fcinfo->nested ? 1 : 0 );
+
+    input0 = (ref_object_t*)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+    lwnotice("arg size: %d", VARSIZE(input0) );
+    pgeom0 = unserialize_ref_object( input0, REF_TYPE_SFCGALGEOMETRY );
+
+    sgeom = serialize_ref_object( pgeom0, fcinfo->nested, REF_TYPE_SFCGALGEOMETRY );
+
+    PG_RETURN_POINTER( sgeom );
+}
