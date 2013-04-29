@@ -100,13 +100,13 @@ CREATE OR REPLACE FUNCTION sfcgal.ST_3DConvexHull(ref_geometry)
 
 CREATE OR REPLACE FUNCTION sfcgal.ST_DelaunayTriangles(ref_geometry)
 	RETURNS ref_geometry
-	AS 'MODULE_PATHNAME','sfcgal_ref_triangulate2D'
+	AS 'MODULE_PATHNAME','sfcgal_ref_triangulate'
 	LANGUAGE 'c' IMMUTABLE STRICT
 	COST 100;
 
-CREATE OR REPLACE FUNCTION sfcgal.ST_3DDelaunayTriangles(ref_geometry)
+CREATE OR REPLACE FUNCTION sfcgal.ST_Tesselate(ref_geometry)
 	RETURNS ref_geometry
-	AS 'MODULE_PATHNAME','sfcgal_ref_triangulate'
+	AS 'MODULE_PATHNAME','sfcgal_ref_tesselate'
 	LANGUAGE 'c' IMMUTABLE STRICT
 	COST 100;
 
@@ -130,19 +130,9 @@ CREATE OR REPLACE FUNCTION sfcgal.ST_Extrude(ref_geometry, float8, float8, float
 	AS 'MODULE_PATHNAME','sfcgal_ref_extrude'
 	LANGUAGE 'c' IMMUTABLE STRICT;
 
-CREATE OR REPLACE FUNCTION sfcgal.ST_ForceZUp(ref_geometry)
+CREATE OR REPLACE FUNCTION sfcgal.ST_ForceLHR(ref_geometry)
 	RETURNS ref_geometry
-	AS 'MODULE_PATHNAME','sfcgal_ref_force_z_up'
-	LANGUAGE 'c' IMMUTABLE STRICT;
-
-CREATE OR REPLACE FUNCTION sfcgal.ST_PointingUp(ref_geometry)
-	RETURNS BOOL
-	AS 'MODULE_PATHNAME','sfcgal_ref_pointing_up'
-	LANGUAGE 'c' IMMUTABLE STRICT;
-
-CREATE OR REPLACE FUNCTION sfcgal.ST_Copy(ref_geometry)
-	RETURNS ref_geometry
-	AS 'MODULE_PATHNAME','sfcgal_ref_copy'
+	AS 'MODULE_PATHNAME','sfcgal_ref_force_lhr'
 	LANGUAGE 'c' IMMUTABLE STRICT;
 
 CREATE OR REPLACE FUNCTION sfcgal.ST_Minkowski(ref_geometry, ref_geometry)
@@ -260,13 +250,13 @@ CREATE OR REPLACE FUNCTION sfcgal.ST_3DConvexHull(exact_geometry)
 
 CREATE OR REPLACE FUNCTION sfcgal.ST_DelaunayTriangles(exact_geometry)
 	RETURNS exact_geometry
-	AS 'MODULE_PATHNAME','sfcgal_exact_triangulate2D'
+	AS 'MODULE_PATHNAME','sfcgal_exact_triangulate'
 	LANGUAGE 'c' IMMUTABLE STRICT
 	COST 100;
 
-CREATE OR REPLACE FUNCTION sfcgal.ST_3DDelaunayTriangles(exact_geometry)
+CREATE OR REPLACE FUNCTION sfcgal.ST_Tesselate(exact_geometry)
 	RETURNS exact_geometry
-	AS 'MODULE_PATHNAME','sfcgal_exact_triangulate'
+	AS 'MODULE_PATHNAME','sfcgal_exact_tesselate'
 	LANGUAGE 'c' IMMUTABLE STRICT
 	COST 100;
 
@@ -290,19 +280,9 @@ CREATE OR REPLACE FUNCTION sfcgal.ST_Extrude(exact_geometry, float8, float8, flo
 	AS 'MODULE_PATHNAME','sfcgal_exact_extrude'
 	LANGUAGE 'c' IMMUTABLE STRICT;
 
-CREATE OR REPLACE FUNCTION sfcgal.ST_ForceZUp(exact_geometry)
+CREATE OR REPLACE FUNCTION sfcgal.ST_ForceLHR(exact_geometry)
 	RETURNS exact_geometry
-	AS 'MODULE_PATHNAME','sfcgal_exact_force_z_up'
-	LANGUAGE 'c' IMMUTABLE STRICT;
-
-CREATE OR REPLACE FUNCTION sfcgal.ST_PointingUp(exact_geometry)
-	RETURNS BOOL
-	AS 'MODULE_PATHNAME','sfcgal_exact_pointing_up'
-	LANGUAGE 'c' IMMUTABLE STRICT;
-
-CREATE OR REPLACE FUNCTION sfcgal.ST_Copy(exact_geometry)
-	RETURNS exact_geometry
-	AS 'MODULE_PATHNAME','sfcgal_exact_copy'
+	AS 'MODULE_PATHNAME','sfcgal_exact_force_lhr'
 	LANGUAGE 'c' IMMUTABLE STRICT;
 
 CREATE OR REPLACE FUNCTION sfcgal.ST_Minkowski(exact_geometry, exact_geometry)

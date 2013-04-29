@@ -65,13 +65,13 @@ CREATE OR REPLACE FUNCTION sfcgal.ST_3DConvexHull(geometry)
 
 CREATE OR REPLACE FUNCTION sfcgal.ST_DelaunayTriangles(geometry)
 	RETURNS geometry
-	AS 'MODULE_PATHNAME','sfcgal_triangulate2D'
+	AS 'MODULE_PATHNAME','sfcgal_triangulate'
 	LANGUAGE 'c' IMMUTABLE STRICT
 	COST 100;
 
-CREATE OR REPLACE FUNCTION sfcgal.ST_3DDelaunayTriangles(geometry)
+CREATE OR REPLACE FUNCTION sfcgal.ST_Tesselate(geometry)
 	RETURNS geometry
-	AS 'MODULE_PATHNAME','sfcgal_triangulate'
+	AS 'MODULE_PATHNAME','sfcgal_tesselate'
 	LANGUAGE 'c' IMMUTABLE STRICT
 	COST 100;
 
@@ -95,24 +95,9 @@ CREATE OR REPLACE FUNCTION sfcgal.ST_Extrude(geometry, float8, float8, float8)
 	AS 'MODULE_PATHNAME','sfcgal_extrude'
 	LANGUAGE 'c' IMMUTABLE STRICT;
 
-CREATE OR REPLACE FUNCTION sfcgal.ST_ForceZUp(geometry)
+CREATE OR REPLACE FUNCTION sfcgal.ST_ForceLHR(geometry)
 	RETURNS geometry
-	AS 'MODULE_PATHNAME','sfcgal_force_z_up'
-	LANGUAGE 'c' IMMUTABLE STRICT;
-
-CREATE OR REPLACE FUNCTION sfcgal.ST_PointingUp(geometry)
-	RETURNS BOOL
-	AS 'MODULE_PATHNAME','sfcgal_pointing_up'
-	LANGUAGE 'c' IMMUTABLE STRICT;
-
--- CREATE OR REPLACE FUNCTION sfcgal.ST_CollectionExtract(geometry, int4)
--- 	RETURNS geometry
--- 	AS 'MODULE_PATHNAME','sfcgal_collection_extract'
--- 	LANGUAGE 'c' IMMUTABLE STRICT;
-
-CREATE OR REPLACE FUNCTION sfcgal.ST_Copy(geometry)
-	RETURNS geometry
-	AS 'MODULE_PATHNAME','sfcgal_copy'
+	AS 'MODULE_PATHNAME','sfcgal_force_lhr'
 	LANGUAGE 'c' IMMUTABLE STRICT;
 
 CREATE OR REPLACE FUNCTION sfcgal.ST_Minkowski(geometry, geometry)
