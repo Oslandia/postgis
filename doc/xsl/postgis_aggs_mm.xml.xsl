@@ -285,6 +285,9 @@
 			<xsl:variable name='matrix_checkmark'><![CDATA[<inlinemediaobject><imageobject><imagedata fileref='images/matrix_checkmark.png' /></imageobject></inlinemediaobject>]]></xsl:variable>
 			<xsl:variable name='matrix_transform'><![CDATA[<inlinemediaobject><imageobject><imagedata fileref='images/matrix_transform.png' /></imageobject></inlinemediaobject>]]></xsl:variable>
 			<xsl:variable name='matrix_autocast'><![CDATA[<inlinemediaobject><imageobject><imagedata fileref='images/matrix_autocast.png' /></imageobject></inlinemediaobject>]]></xsl:variable>
+			<xsl:variable name='matrix_sfcgal_required'><![CDATA[<inlinemediaobject><imageobject><imagedata fileref='images/matrix_sfcgal_required.png' /></imageobject></inlinemediaobject>]]></xsl:variable>
+			<xsl:variable name='matrix_sfcgal_enhanced'><![CDATA[<inlinemediaobject><imageobject><imagedata fileref='images/matrix_sfcgal_enhanced.png' /></imageobject></inlinemediaobject>]]></xsl:variable>
+			
 			<title>PostGIS Function Support Matrix</title>
 
 			<para>Below is an alphabetical listing of spatial specific functions in PostGIS and the kinds of spatial
@@ -294,6 +297,8 @@
 				<listitem><simpara>A <xsl:value-of select="$matrix_transform" disable-output-escaping="yes"/> means it works but with a transform cast built-in using cast to geometry, transform to a "best srid" spatial ref and then cast back. Results may not be as expected for large areas or areas at poles 
 						and may accumulate floating point junk.</simpara></listitem>
 				<listitem><simpara>A <xsl:value-of select="$matrix_autocast" disable-output-escaping="yes"/> means the function works with the type because of a auto-cast to another such as to box3d rather than direct type support.</simpara></listitem>
+				<listitem><simpara>A <xsl:value-of select="$matrix_sfcgal_required" disable-output-escaping="yes"/> means the function only available if PostGIS compiled with SFCGAL support.</simpara></listitem>
+				<listitem><simpara>A <xsl:value-of select="$matrix_sfcgal_enhanced" disable-output-escaping="yes"/> means the function support is provided by SFCGAL if PostGIS compiled with SFCGAL support, otherwise GEOS/built-in support.</simpara></listitem>
 				<listitem><simpara>geom - Basic 2D geometry support (x,y).</simpara></listitem>
 				<listitem><simpara>geog - Basic 2D geography support (x,y).</simpara></listitem>
 				<listitem><simpara>2.5D - basic 2D geometries in 3 D/4D space (has Z or M coord).</simpara></listitem>
@@ -378,7 +383,10 @@
 								<xsl:choose>
 									<!-- supports -->
 									<xsl:when test="contains(.,'This function supports 3d')">
-										<entry><xsl:value-of select="$matrix_checkmark" disable-output-escaping="yes"/></entry>
+										<!-- if 3d denote if it needs sfcgal -->
+										<entry><xsl:choose><xsl:when test="contains(.,'needs SFCGAL')"><xsl:value-of select="$matrix_sfcgal_required" disable-output-escaping="yes"/></xsl:when>
+										<xsl:when test="contains(.,'provided by SFCGAL')"><xsl:value-of select="$matrix_sfcgal_enhanced" disable-output-escaping="yes"/></xsl:when>
+										<xsl:otherwise><xsl:value-of select="$matrix_checkmark" disable-output-escaping="yes"/></xsl:otherwise></xsl:choose></entry>
 									</xsl:when>
 									<!-- no support -->
 									<xsl:otherwise>
@@ -400,7 +408,9 @@
 								<xsl:choose>
 									<!-- supports -->
 									<xsl:when test="contains(.,'implements the SQL/MM')">
-										<entry><xsl:value-of select="$matrix_checkmark" disable-output-escaping="yes"/></entry>
+										<entry><xsl:choose><xsl:when test="contains(.,'needs SFCGAL')"><xsl:value-of select="$matrix_sfcgal_required" disable-output-escaping="yes"/></xsl:when>
+										<xsl:when test="contains(.,'provided by SFCGAL')"><xsl:value-of select="$matrix_sfcgal_enhanced" disable-output-escaping="yes"/></xsl:when>
+										<xsl:otherwise><xsl:value-of select="$matrix_checkmark" disable-output-escaping="yes"/></xsl:otherwise></xsl:choose></entry>
 									</xsl:when>
 									<!-- no support -->
 									<xsl:otherwise>
@@ -411,7 +421,9 @@
 								<xsl:choose>
 									<!-- supports -->
 									<xsl:when test="contains(.,'Polyhedral')">
-										<entry><xsl:value-of select="$matrix_checkmark" disable-output-escaping="yes"/></entry>
+										<entry><xsl:choose><xsl:when test="contains(.,'needs SFCGAL')"><xsl:value-of select="$matrix_sfcgal_required" disable-output-escaping="yes"/></xsl:when>
+										<xsl:when test="contains(.,'provided by SFCGAL')"><xsl:value-of select="$matrix_sfcgal_enhanced" disable-output-escaping="yes"/></xsl:when>
+										<xsl:otherwise><xsl:value-of select="$matrix_checkmark" disable-output-escaping="yes"/></xsl:otherwise></xsl:choose></entry>
 									</xsl:when>
 									<!-- no support -->
 									<xsl:otherwise>
@@ -422,7 +434,9 @@
 								<xsl:choose>
 									<!-- supports -->
 									<xsl:when test="contains(.,'Triang')">
-										<entry><xsl:value-of select="$matrix_checkmark" disable-output-escaping="yes"/></entry>
+										<entry><xsl:choose><xsl:when test="contains(.,'needs SFCGAL')"><xsl:value-of select="$matrix_sfcgal_required" disable-output-escaping="yes"/></xsl:when>
+										<xsl:when test="contains(.,'provided by SFCGAL')"><xsl:value-of select="$matrix_sfcgal_enhanced" disable-output-escaping="yes"/></xsl:when>
+										<xsl:otherwise><xsl:value-of select="$matrix_checkmark" disable-output-escaping="yes"/></xsl:otherwise></xsl:choose></entry>
 									</xsl:when>
 									<!-- no support -->
 									<xsl:otherwise>
@@ -439,8 +453,8 @@
 
 		<sect1 id="NewFunctions">
 			<title>New, Enhanced or changed PostGIS Functions</title>
-				<sect2 id="NewFunctions_2_1">
-				<title>PostGIS Functions new, behavior changed, or enhanced in 2.1</title>
+			<sect2 id="NewFunctions_2_1">
+				<title>PostGIS Functions new or enhanced in 2.1</title>
 				<para>The functions given below are PostGIS functions that were added or enhanced.</para>
 				
 				<note><para>More Topology performance Improvements.  Please refer to <xref linkend="Topology" /> for more details.</para></note>
@@ -448,7 +462,7 @@
 				<note><para>Tiger Geocoder upgraded to work with TIGER 2012 census data.  <varname>geocode_settings</varname> added for debugging and tweaking rating preferences, loader made less greedy, now only downloads tables to be loaded.
 					Please refer to <xref linkend="Tiger_Geocoder" /> for more details.</para></note>
 					
-				<para>Functions enhanced in PostGIS 2.1</para>
+				<para>Functions new in PostGIS 2.1</para>
 				<itemizedlist>
 				<!-- Pull out the purpose section for each ref entry and strip whitespace and put in a variable to be tagged unto each function comment  -->
 					<xsl:for-each select='//refentry'>
@@ -477,7 +491,7 @@
 							</xsl:for-each>
 					</xsl:for-each>
 				</itemizedlist>
-				
+			
 				<para>The functions given below are PostGIS functions that are enhanced in PostGIS 2.1.</para>
 				<itemizedlist>
 				<!-- Pull out the purpose section for each ref entry   -->
@@ -502,7 +516,10 @@
 							</xsl:for-each>
 					</xsl:for-each>
 				</itemizedlist>	
-				
+			
+			</sect2>
+			
+			<sect2 id="ChangedFunctions_2_1"><title>PostGIS functions breaking changes in 2.1</title>
 				<para>The functions given below are PostGIS functions that have possibly breaking changes in PostGIS 2.1.  If you use any of these, you may need to check your existing code.</para>
 				<itemizedlist>
 				<!-- Pull out the purpose section for each ref entry   -->
@@ -527,9 +544,8 @@
 							</xsl:for-each>
 					</xsl:for-each>
 				</itemizedlist>
-				
-			
 			</sect2>
+
 		
 			<sect2 id="NewFunctions_2_0">
 				<title>PostGIS Functions new, behavior changed, or enhanced in 2.0</title>

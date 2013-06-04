@@ -91,6 +91,9 @@ Datum _postgis_gserialized_sel(PG_FUNCTION_ARGS);
 Datum _postgis_gserialized_joinsel(PG_FUNCTION_ARGS);
 Datum _postgis_gserialized_stats(PG_FUNCTION_ARGS);
 
+/* Old Prototype */
+Datum geometry_estimated_extent(PG_FUNCTION_ARGS);
+
 /**
 * Assign a number to the n-dimensional statistics kind
 *
@@ -271,21 +274,6 @@ range_quintile(int *vals, int nvals)
 }
 
 /**
-* Given int array, return sum of values.
-*/
-static int 
-total_int(const int *vals, int nvals)
-{
-	int i;
-	int total = 0;
-	/* Calculate total */
-	for ( i = 0; i < nvals; i++ )
-		total += vals[i];
-
-	return total;
-}
-
-/**
 * Given double array, return sum of values.
 */
 static double 
@@ -293,6 +281,23 @@ total_double(const double *vals, int nvals)
 {
 	int i;
 	float total = 0;
+	/* Calculate total */
+	for ( i = 0; i < nvals; i++ )
+		total += vals[i];
+
+	return total;
+}
+
+#if POSTGIS_DEBUG_LEVEL >= 3
+
+/**
+* Given int array, return sum of values.
+*/
+static int 
+total_int(const int *vals, int nvals)
+{
+	int i;
+	int total = 0;
 	/* Calculate total */
 	for ( i = 0; i < nvals; i++ )
 		total += vals[i];
@@ -328,6 +333,7 @@ stddev(const int *vals, int nvals)
 	}
 	return sqrt(sigma2 / nvals);
 }
+#endif /* POSTGIS_DEBUG_LEVEL >= 3 */
 
 /**
 * Given a position in the n-d histogram (i,j,k) return the
@@ -434,29 +440,28 @@ nd_stats_to_json(const ND_STATS *nd_stats)
 * Caller is responsible for freeing.
 * Currently only prints first two dimensions.
 */
-static char* 
-nd_stats_to_grid(const ND_STATS *stats)
-{
-	char *rv;
-	int j, k;
-//	int ndims = (int)roundf(stats->ndims);
-	int sizex = (int)roundf(stats->size[0]);
-	int sizey = (int)roundf(stats->size[1]);
-	stringbuffer_t *sb = stringbuffer_create();
-
-	for ( k = 0; k < sizey; k++ )
-	{
-		for ( j = 0; j < sizex; j++ )
-		{
-			stringbuffer_aprintf(sb, "%3d ", (int)roundf(stats->value[j + k*sizex]));
-		}
-		stringbuffer_append(sb,  "\n");
-	}
-		
-	rv = stringbuffer_getstringcopy(sb);
-	stringbuffer_destroy(sb);
-	return rv;
-}
+// static char* 
+// nd_stats_to_grid(const ND_STATS *stats)
+// {
+//  char *rv;
+//  int j, k;
+//  int sizex = (int)roundf(stats->size[0]);
+//  int sizey = (int)roundf(stats->size[1]);
+//  stringbuffer_t *sb = stringbuffer_create();
+// 
+//  for ( k = 0; k < sizey; k++ )
+//  {
+//      for ( j = 0; j < sizex; j++ )
+//      {
+//          stringbuffer_aprintf(sb, "%3d ", (int)roundf(stats->value[j + k*sizex]));
+//      }
+//      stringbuffer_append(sb,  "\n");
+//  }
+//      
+//  rv = stringbuffer_getstringcopy(sb);
+//  stringbuffer_destroy(sb);
+//  return rv;
+// }
 
 
 /** Expand the bounds of target to include source */
@@ -689,7 +694,9 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
 	int counts[num_bins];
 	double smin, smax;   /* Spatial min, spatial max */
 	double swidth;       /* Spatial width of dimension */
+#if POSTGIS_DEBUG_LEVEL >= 3
 	double average, sdev, sdev_ratio;
+#endif
 	int   bmin, bmax;   /* Bin min, bin max */
 	const ND_BOX *ndb; 
 	
@@ -746,9 +753,11 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
 
 		/* How dispersed is the distribution of features across bins? */
 		range = range_quintile(counts, num_bins);
+#if POSTGIS_DEBUG_LEVEL >= 3
 		average = avg(counts, num_bins);
 		sdev = stddev(counts, num_bins);
 		sdev_ratio = sdev/average;
+#endif
 		
 		POSTGIS_DEBUGF(3, " dimension %d: range = %d", d, range);
 		POSTGIS_DEBUGF(3, " dimension %d: average = %.6g", d, average);
@@ -851,12 +860,15 @@ pg_get_nd_stats_by_name(const Oid table_oid, const text *att_text, int mode)
 	{
 		/* Get the attribute number */
 		att_num = get_attnum(table_oid, att_name);
-		if  ( ! att_num )
+		if  ( ! att_num ) {
 			elog(ERROR, "attribute \"%s\" does not exist", att_name);
+			return NULL;
+		}
 	}
 	else 
 	{
 		elog(ERROR, "attribute name is null");
+		return NULL;
 	}
 	
 	return pg_get_nd_stats(table_oid, att_num, mode);
@@ -1649,7 +1661,9 @@ compute_gserialized_stats_mode(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 	POSTGIS_DEBUGF(3, " out: average width: %d bytes", stats->stawidth);
 	POSTGIS_DEBUG (3, " out: distinct values: all (no check done)");
 	POSTGIS_DEBUGF(3, " out: %s", nd_stats_to_json(nd_stats));
+	/*
 	POSTGIS_DEBUGF(3, " out histogram:\n%s", nd_stats_to_grid(nd_stats));
+	*/
 
 	return;
 }
@@ -1878,7 +1892,7 @@ Datum _postgis_gserialized_stats(PG_FUNCTION_ARGS)
 	ND_STATS *nd_stats;
 	char *str;
 	text *json;
-	int mode;
+	int mode = 2; /* default to 2D mode */
 	
 	/* Check if we've been asked to not use 2d mode */
 	if ( ! PG_ARGISNULL(2) )
@@ -2182,3 +2196,31 @@ Datum gserialized_estimated_extent(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(gbox);
 }
 
+/**
+ * Return the estimated extent of the table
+ * looking at gathered statistics (or NULL if
+ * no statistics have been gathered).
+ */
+  
+PG_FUNCTION_INFO_V1(geometry_estimated_extent);
+Datum geometry_estimated_extent(PG_FUNCTION_ARGS)
+{
+	if ( PG_NARGS() == 3 )
+	{
+	    PG_RETURN_DATUM(
+	    DirectFunctionCall3(gserialized_estimated_extent, 
+	    PG_GETARG_DATUM(0), 
+	    PG_GETARG_DATUM(1), 
+        PG_GETARG_DATUM(2)));
+	}
+	else if ( PG_NARGS() == 2 )
+	{
+	    PG_RETURN_DATUM(
+	    DirectFunctionCall2(gserialized_estimated_extent, 
+	    PG_GETARG_DATUM(0), 
+	    PG_GETARG_DATUM(1)));
+	}
+
+	elog(ERROR, "geometry_estimated_extent() called with wrong number of arguments");
+	PG_RETURN_NULL();
+}

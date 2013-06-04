@@ -31,6 +31,7 @@ extern CU_SuiteInfo band_stats_suite;
 extern CU_SuiteInfo band_misc_suite;
 extern CU_SuiteInfo mapalgebra_suite;
 extern CU_SuiteInfo spatial_relationship_suite;
+extern CU_SuiteInfo misc_suite;
 
 /*
 ** The main() function for setting up and running the tests.
@@ -53,6 +54,7 @@ int main(int argc, char *argv[])
 		band_misc_suite,
 		spatial_relationship_suite,
 		mapalgebra_suite,
+		misc_suite,
 		CU_SUITE_INFO_NULL
 	};
 
@@ -232,6 +234,11 @@ rt_band cu_add_band(rt_raster raster, rt_pixtype pixtype, int hasnodata, double 
 	datasize = rt_pixtype_size(pixtype) * width * height;
 	mem = rtalloc(datasize);
 	CU_ASSERT(mem != NULL);
+
+	if (hasnodata)
+		memset(mem, nodataval, datasize);
+	else
+		memset(mem, 0, datasize);
 
 	band = rt_band_new_inline(width, height, pixtype, hasnodata, nodataval, mem);
 	CU_ASSERT(band != NULL);

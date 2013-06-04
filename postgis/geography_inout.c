@@ -46,9 +46,6 @@ Datum geometry_from_geography(PG_FUNCTION_ARGS);
 Datum geography_send(PG_FUNCTION_ARGS);
 Datum geography_recv(PG_FUNCTION_ARGS);
 
-/* Datum geography_gist_selectivity(PG_FUNCTION_ARGS); TBD */
-/* Datum geography_gist_join_selectivity(PG_FUNCTION_ARGS); TBD */
-
 GSERIALIZED* gserialized_geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod);
 
 /**
@@ -86,7 +83,8 @@ GSERIALIZED* gserialized_geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod
 	geography_valid_type(lwgeom->type);
 
 	/* Force the geometry to have valid geodetic coordinate range. */
-	if ( ! lwgeom_nudge_geodetic(lwgeom) && lwgeom_force_geodetic(lwgeom) == LW_TRUE )
+	lwgeom_nudge_geodetic(lwgeom);
+	if ( lwgeom_force_geodetic(lwgeom) == LW_TRUE )
 	{
 		ereport(NOTICE, (
 		        errmsg_internal("Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY" ))
@@ -269,7 +267,7 @@ Datum geography_as_gml(PG_FUNCTION_ARGS)
 	/* retrieve id */
 	if (PG_NARGS() >5 && !PG_ARGISNULL(5))
 	{
-		prefix_text = PG_GETARG_TEXT_P(5);
+		id_text = PG_GETARG_TEXT_P(5);
 		if ( VARSIZE(id_text)-VARHDRSZ == 0 )
 		{
 			id = "";
@@ -587,7 +585,8 @@ Datum geography_from_geometry(PG_FUNCTION_ARGS)
 	srid_is_latlong(fcinfo, lwgeom->srid);
 
 	/* Force the geometry to have valid geodetic coordinate range. */
-	if ( ! lwgeom_nudge_geodetic(lwgeom) && lwgeom_force_geodetic(lwgeom) == LW_TRUE )
+	lwgeom_nudge_geodetic(lwgeom);
+	if ( lwgeom_force_geodetic(lwgeom) == LW_TRUE )
 	{
 		ereport(NOTICE, (
 		        errmsg_internal("Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY" ))

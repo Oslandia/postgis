@@ -130,6 +130,7 @@ Datum LWGEOM_dumppoints(PG_FUNCTION_ARGS) {
 			 * probably not worth the bother
 			 */
 			LWLINE	*line;
+			LWCIRCSTRING *circ;
 			LWPOLY	*poly;
 			LWTRIANGLE	*tri;
 			LWPOINT *lwpoint = NULL;
@@ -192,18 +193,20 @@ Datum LWGEOM_dumppoints(PG_FUNCTION_ARGS) {
 					if (state->pt == 0) lwpoint = lwgeom_as_lwpoint(lwgeom);
 					break;
 				case LINETYPE:
-				case CIRCSTRINGTYPE:
 					line = lwgeom_as_lwline(lwgeom);
 					if (line->points && state->pt <= line->points->npoints) {
 						lwpoint = lwline_get_lwpoint((LWLINE*)lwgeom, state->pt);
 					}
 					break;
-				case CURVEPOLYTYPE:
+				case CIRCSTRINGTYPE:
+					circ = lwgeom_as_lwcircstring(lwgeom);
+					if (circ->points && state->pt <= circ->points->npoints) {
+						lwpoint = lwcircstring_get_lwpoint((LWCIRCSTRING*)lwgeom, state->pt);
+					}
+					break;
 				default:
-					/* TODO error? */
-					if (--state->stacklen == 0) SRF_RETURN_DONE(funcctx);
-					state->pathlen--;
-					continue;
+					ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
+						errmsg("Invalid Geometry type %d passed to ST_DumpPoints()", lwgeom->type)));
 			}
 
 			/*
@@ -277,5 +280,6 @@ Datum LWGEOM_dumppoints(PG_FUNCTION_ARGS) {
         case MULTISURFACETYPE:
         case POLYHEDRALSURFACETYPE:
         case TINTYPE:
+
 #endif
 

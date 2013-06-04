@@ -873,6 +873,12 @@ extern LWGEOM* lwgeom_force_4d(const LWGEOM *geom);
 
 extern LWGEOM* lwgeom_simplify(const LWGEOM *igeom, double dist);
 
+/* 
+ * Force to use SFS 1.1 geometry type
+ * (rather than SFS 1.2 and/or SQL/MM)
+ */
+extern LWGEOM* lwgeom_force_sfs(LWGEOM *geom, int version);
+
 
 /*--------------------------------------------------------
  * all the base types (point/line/polygon) will have a
@@ -919,9 +925,11 @@ extern int lwcurvepoly_add_ring(LWCURVEPOLY *poly, LWGEOM *ring);
 */
 extern int lwcompound_add_lwgeom(LWCOMPOUND *comp, LWGEOM *geom);
 
-
-
-
+/**
+* Construct an equivalent curve polygon from a polygon. Curve polygons
+* can have linear rings as their rings, so this works fine (in theory?)
+*/
+extern LWCURVEPOLY* lwcurvepoly_construct_from_lwpoly(LWPOLY *lwpoly);
 
 
 /******************************************************************
@@ -1063,6 +1071,7 @@ extern void lwgeom_affine(LWGEOM *geom, const AFFINE *affine);
 extern int lwgeom_dimension(const LWGEOM *geom);
 
 extern LWPOINT* lwline_get_lwpoint(LWLINE *line, int where);
+extern LWPOINT* lwcircstring_get_lwpoint(LWCIRCSTRING *circ, int where);
 
 extern double ptarray_length_2d(const POINTARRAY *pts);
 extern double ptarray_length(const POINTARRAY *pts);
