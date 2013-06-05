@@ -1,3 +1,4 @@
+SELECT postgis_sfcgal_version() = postgis_sfcgal_version();
 SET postgis.backend = 'sfcgal';
 SET client_min_messages TO warning;
 SELECT 'Starting up MapServer/Geoserver tests...';

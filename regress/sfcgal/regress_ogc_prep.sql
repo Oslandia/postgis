@@ -3,6 +3,7 @@
 ---
 ---
 
+SELECT postgis_sfcgal_version() = postgis_sfcgal_version();
 SET postgis.backend = 'sfcgal';
 
 SELECT c, ST_Intersects(ply, pt) FROM 

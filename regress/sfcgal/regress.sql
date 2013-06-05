@@ -1,3 +1,4 @@
+SELECT postgis_sfcgal_version() = postgis_sfcgal_version();
 SET postgis.backend = 'sfcgal';
 --- regression test for postGIS
 

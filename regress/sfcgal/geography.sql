@@ -1,3 +1,4 @@
+SELECT postgis_sfcgal_version() = postgis_sfcgal_version();
 SET postgis.backend = 'sfcgal';
 
 INSERT INTO spatial_ref_sys (srid, auth_name, auth_srid, srtext, proj4text)

@@ -1,3 +1,4 @@
+t
 #2|POLYGON((1 1,1 2,2 2,3 2,3 1,2 1,1 1))
 #11|0
 NOTICE:  ST_Locate_Between_Measures and ST_Locate_Along_Measure are deprecated. Use ST_LocateAlong and ST_LocateBetween.

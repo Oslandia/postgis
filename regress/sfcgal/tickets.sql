@@ -3,6 +3,7 @@
 -- referenced by bug number for historical interest.
 --
 
+SELECT postgis_sfcgal_version() = postgis_sfcgal_version();
 SET postgis.backend = 'sfcgal';
 
 -- NOTE: some tests _require_ spatial_ref_sys entries.

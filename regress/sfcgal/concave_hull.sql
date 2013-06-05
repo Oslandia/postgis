@@ -1,3 +1,4 @@
+SELECT postgis_sfcgal_version() = postgis_sfcgal_version();
 SET postgis.backend = 'sfcgal';
 
 -- $Id: concave_hull.sql 9324 2012-02-27 22:08:12Z pramsey $

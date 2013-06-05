@@ -3,6 +3,7 @@
 ---
 ---
 
+SELECT postgis_sfcgal_version() = postgis_sfcgal_version();
 SET postgis.backend = 'sfcgal';
 
 -- Repeat all tests with new function names.
