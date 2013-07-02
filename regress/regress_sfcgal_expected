@@ -9,6 +9,8 @@ ST_Orientation_1|-1
 ST_Orientation_2|1
 ST_MinkowskiSum|MULTIPOLYGON(((0 0,1 0,5 0,5 1,4 1,0 1,0 0)))
 ST_StraightSkeleton|MULTILINESTRING((0 0,0.5 0.5),(1 0,0.5 0.5),(1 1,0.5 0.5),(0 1,0.5 0.5))
+ERROR:  cannot create coordinate with non finite value
+ERROR:  cannot create coordinate with non finite value
 intersection_geos|POINT(0 0)
 intersection_sfcgal|POINT(-0 -0)
 ERROR:  Can't find foo geometry backend

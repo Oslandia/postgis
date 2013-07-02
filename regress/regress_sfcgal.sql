@@ -17,6 +17,9 @@ SELECT 'ST_Orientation_2', ST_Orientation(ST_ForceRHR('POLYGON((0 0,0 1,1 1,1 0,
 SELECT 'ST_MinkowskiSum', ST_AsText(ST_MinkowskiSum('LINESTRING(0 0,4 0)','POLYGON((0 0,1 0,1 1,0 1,0 0))'));
 SELECT 'ST_StraightSkeleton', ST_AsText(ST_StraightSkeleton('POLYGON((0 0,1 0,1 1,0 1,0 0))'));
 
+SELECT 'Geometries_wuth_nan', ST_Tesselate('01010000009a9999999999b93f000000000000ffff'::geometry);
+SELECT 'Geometries_wuth_inf', ST_Tesselate('01010000009a9999999999b93f000000000000f0ff'::geometry);
+
 -- Backend switch tests
 SET postgis.backend = 'geos';
 SELECT 'intersection_geos', ST_astext(ST_intersection('LINESTRING(0 10, 0 -10)', 'LINESTRING(0 0, 1 1)'));
