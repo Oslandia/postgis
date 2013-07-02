@@ -348,6 +348,7 @@ ST_DWithin(
 			<para>&Z_support;</para>
 			<!-- Optionally mention supports Polyhedral Surface  -->
 			<para>&P_support;</para>
+			<para>&sfcgal_enhanced;</para>
 			<para>&sqlmm_compliant; SQL-MM 3: ?</para>
 		</refsection>
 		<refsection>
