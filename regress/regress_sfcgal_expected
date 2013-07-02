@@ -3,7 +3,7 @@ ST_Tesselate|GEOMETRYCOLLECTION(POINT(4 4),TIN(((0 1,1 0,1 1,0 1)),((0 1,0 0,1 0
 ST_3DArea|1
 ST_Extrude_point|LINESTRING Z (0 0 0,1 0 0)
 ST_Extrude_line|POLYHEDRALSURFACE Z (((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0)))
-ST_Extrude_surface|POLYHEDRALSURFACE Z (((1 1 0,1 0 0,0 1 0,1 1 0)),((0 1 1,1 0 1,1 1 1,0 1 1)),((1 0 0,0 0 0,0 1 0,1 0 0)),((0 1 1,0 0 1,1 0 1,0 1 1)),((1 0 0,1 1 0,1 1 1,1 0 1,1 0 0)),((1 1 0,0 1 0,0 1 1,1 1 1,1 1 0)),((0 1 0,0 0 0,0 0 1,0 1 1,0 1 0)),((0 0 0,1 0 0,1 0 1,0 0 1,0 0 0)))
+ST_Extrude_surface|POLYHEDRALSURFACE Z (((0 1 0,1 1 0,1 0 0,0 1 0)),((0 1 1,1 0 1,1 1 1,0 1 1)),((0 1 0,1 0 0,0 0 0,0 1 0)),((0 1 1,0 0 1,1 0 1,0 1 1)),((1 0 0,1 1 0,1 1 1,1 0 1,1 0 0)),((1 1 0,0 1 0,0 1 1,1 1 1,1 1 0)),((0 1 0,0 0 0,0 0 1,0 1 1,0 1 0)),((0 0 0,1 0 0,1 0 1,0 0 1,0 0 0)))
 ST_ForceLHR|POLYGON((0 0,1 0,1 1,0 1,0 0))
 ST_Orientation_1|-1
 ST_Orientation_2|1
