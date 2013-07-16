@@ -1,3 +1,23 @@
+PostGIS 2.2.0
+2014/MM/DD
+
+ * Important / Breaking Changes  *
+
+ * Deprecated signatures *
+
+ * New Features *
+
+ * Enhancements *
+
+  - Added missing variants of ST_TPI(), ST_TRI() and ST_Roughness()
+  - #1678, Added GUC postgis.gdal.datapath to specify GDAL config
+    variable GDAL_DATA
+  - #2361, Added spatial_index column to raster_columns view
+
+ * Bug Fixes *
+
+  - #2371, Support GEOS versions with more than 1 digit in micro
+
 PostGIS 2.1.0
 2013/MM/DD
 
@@ -161,7 +181,7 @@ PostGIS 2.1.0
   - #1823, add parameter in ST_AsGML to use id column for GML 3 output 
            (become mandatory since GML 3.2.1)
 
- * Fixes *
+ * Bug Fixes *
 
   - #1839, handling of subdatasets in GeoTIFF in raster2pgsql.
   - #1840, fix logic of when to compute # of tiles in raster2pgsql.
@@ -184,6 +204,8 @@ PostGIS 2.1.0
   - #2019, ST_FlipCoordinates does not update bbox
   - #2100, ST_AsRaster may not return raster with specified pixel type
   - #2126, Better handling of empty rasters from ST_ConvexHull()
+  - #2165, ST_NumPoints regression failure with CircularString
+  - #2168, ST_Distance is not always commutative
   - #2182, Fix issue with outdb rasters with no SRID and ST_Resize
   - #2188, Fix function parameter value overflow that caused problems
            when copying data from a GDAL dataset
@@ -200,7 +222,11 @@ PostGIS 2.1.0
   - #2257, GBOX variables not initialized when testing with empty geometries
   - #2271, Prevent parallel make of raster
   - #2282, Fix call to undefined function nd_stats_to_grid() in debug mode
+  - #2307, ST_MakeValid outputs invalid geometries
   - #2309, Remove confusing INFO message when trying to get SRS info
+  - #2348, Provide raster upgrade path for 2.0 to 2.1
+  - #2351, st_distance between geographies wrong
+  - #2359, Fix handling of schema name when adding overview constraints
 
 PostGIS 2.0.3
 2013/03/01
