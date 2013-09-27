@@ -22,7 +22,7 @@ until release.  If you have data from tiger_2010 and want replace with tiger_201
 			  
 			  <note><para>New in PostGIS 2.1.0 release is ability to install tiger geocoder with PostgreSQL extension model if you are running PostgreSQL 9.1+. Refer to <xref linkend="install_tiger_geocoder_extension" /> for details.</para></note>
 			  </para>
-			  <para>Also new in PostGIS 2.1.0 is integration with pagc address standardizer C library which source can be downloaded from <ulink url="http://pagc.svn.sourceforge.net/viewvc/pagc/branches/sew-refactor/postgresql">PAGC PostgreSQL address standardizer extension</ulink> and after install and install of the libraray in your PostGIS database, you can use the <xref linkend="Pagc_Normalize_Address" /> function as a drop in replacement for in-built <xref linkend="Normalize_Address" />.</para> 
+			  <para>Also new in PostGIS 2.1.0 is integration with pagc address standardizer PostgreSQL extension which source can be downloaded from <ulink url="http://sourceforge.net/p/pagc/code/360/tree/branches/sew-refactor/postgresql">PAGC PostgreSQL address standardizer extension</ulink> and after install and install of the library in your PostGIS database, you can use the <xref linkend="Pagc_Normalize_Address" /> function as a drop in replacement for in-built <xref linkend="Normalize_Address" />. Refer to <xref linkend="installing_pagc_address_standardizer" /> for compile and installation instructions.</para> 
 		
 
 
@@ -134,8 +134,7 @@ DROP INDEX tiger_data.idx_tiger_data_ma_county_snd_name;
 	  <refsynopsisdiv>
 		<funcsynopsis>
 		  <funcprototype>
-			<funcdef>text <function>Drop_State_Tables_Generate_Script</function></funcdef>
-				<paramdef><type>text </type> <parameter>param_state</parameter></paramdef>
+			<funcdef>text <function>Drop_Nation_Tables_Generate_Script</function></funcdef>
 				<paramdef choice="opt"><type>text </type> <parameter>param_schema=tiger_data</parameter></paramdef>
 			</funcprototype>
 		</funcsynopsis>
@@ -1061,11 +1060,11 @@ FROM pagc_normalize_address('9000 E ROO ST STE 999, Springfield, CO') AS addy;
         
  address | predirabbrev | streetname | streettypeabbrev | postdirabbrev | internal  |  location   | stateabbrev | zip | parsed
 ---------+--------------+------------+------------------+---------------+-----------+-------------+-------------+-----+--------
-    9000 | E            | ROO        | St               |               | SUITE 999 | SPRINGFIELD | CO          |     | t</programlisting>
+    9000 | E            | ROO        | ST               |               | SUITE 999 | SPRINGFIELD | CO          |     | t</programlisting>
     
     		<para>Batch call.  There are currently speed issues with the way postgis_tiger_geocoder wraps the address_standardizer.  These will hopefully
 be resolved in later editions.  To work around them, if you need speed for batch geocoding to call generate a normaddy  in batch mode, you are encouraged
-to directly call the address_standardizer standardize_address function as shown below which is similar exercise to what we did in <xref linkend="Normalize_Address" />.</para>
+to directly call the address_standardizer standardize_address function as shown below which is similar exercise to what we did in <xref linkend="Normalize_Address" /> that uses data created in <xref linkend="Geocode" />.</para>
     
     <programlisting>WITH g AS (SELECT address, ROW((sa).house_num, (sa).predir, (sa).name
   , (sa).suftype, (sa).sufdir, (sa).unit , (sa).city, (sa).state, (sa).postcode, true)::norm_addy As na
@@ -1078,12 +1077,12 @@ SELECT address As orig, (g.na).streetname, (g.na).streettypeabbrev
  
  orig                                                |  streetname   | streettypeabbrev
 -----------------------------------------------------+---------------+------------------
- 529 Main Street, Boston MA, 02129                   | MAIN          | St
- 77 Massachusetts Avenue, Cambridge, MA 02139        | MASSACHUSETTS | Ave
+ 529 Main Street, Boston MA, 02129                   | MAIN          | ST
+ 77 Massachusetts Avenue, Cambridge, MA 02139        | MASSACHUSETTS | AVE
  25 Wizard of Oz, Walaford, KS 99912323              | WIZARD OF     |
- 26 Capen Street, Medford, MA                        | CAPEN         | St
- 124 Mount Auburn St, Cambridge, Massachusetts 02138 | MOUNT AUBURN  | St
- 950 Main Street, Worcester, MA 01610                | MAIN          | St</programlisting>
+ 26 Capen Street, Medford, MA                        | CAPEN         | ST
+ 124 Mount Auburn St, Cambridge, Massachusetts 02138 | MOUNT AUBURN  | ST
+ 950 Main Street, Worcester, MA 01610                | MAIN          | ST</programlisting>
 		</refsection>
 	  <!-- Optionally add a "See Also" section -->
 	  <refsection>

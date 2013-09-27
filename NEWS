@@ -3,9 +3,14 @@ PostGIS 2.2.0
 
  * Important / Breaking Changes  *
 
+  - Split raster/rt_core/rt_api.c and raster/rt_pg/rt_pg.c files into
+    smaller files for ease of long-term maintenance and development
+
  * Deprecated signatures *
 
  * New Features *
+
+  - #2430, ST_ForceCurve
 
  * Enhancements *
 
@@ -13,10 +18,15 @@ PostGIS 2.2.0
   - #1678, Added GUC postgis.gdal.datapath to specify GDAL config
     variable GDAL_DATA
   - #2361, Added spatial_index column to raster_columns view
+  - #2397, read encoding info automatically in loader
 
  * Bug Fixes *
 
   - #2371, Support GEOS versions with more than 1 digit in micro
+  - #2383, Removed unsafe use of \' from raster warning message
+  - #2384, Fixed variable datatype in ST_Neighborhood
+  - #2454, Fix behavior of ST_PixelAsXXX functions regarding
+           exclude_nodata_value parameter
 
 PostGIS 2.1.0
 2013/MM/DD

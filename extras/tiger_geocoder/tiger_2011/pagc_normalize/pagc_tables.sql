@@ -18,7 +18,7 @@ BEGIN
 		GRANT SELECT ON pagc_lex TO public;
 	END IF;
 	IF NOT EXISTS(SELECT table_name FROM information_schema.columns WHERE table_schema = 'tiger' AND table_name = 'pagc_rules')  THEN
-		CREATE TABLE pagc_rules (id serial NOT NULL primary key,rule text);
+		CREATE TABLE pagc_rules (id serial NOT NULL primary key,rule text, is_custom boolean DEFAULT true);
 		GRANT SELECT ON pagc_rules TO public;
 	END IF;
 	IF NOT EXISTS(SELECT table_name FROM information_schema.columns WHERE table_schema = 'tiger' AND table_name = 'pagc_gaz' AND data_type='text')  THEN
@@ -28,6 +28,10 @@ BEGIN
 		ALTER TABLE tiger.pagc_gaz ALTER COLUMN word TYPE text;
 		ALTER TABLE tiger.pagc_gaz ALTER COLUMN stdword TYPE text;
 	END IF;
+	IF NOT EXISTS(SELECT table_name FROM information_schema.columns WHERE table_schema = 'tiger' AND table_name = 'pagc_rules' AND column_name = 'is_custom' )  THEN
+	-- its probably old table structure add column
+		ALTER TABLE tiger.pagc_rules ADD COLUMN is_custom boolean NOT NULL DEFAULT false;
+	END IF;
 END;
 $$
 language plpgsql;
@@ -36,7 +40,7 @@ language plpgsql;
 SELECT install_pagc_tables();
 DELETE FROM pagc_gaz WHERE is_custom = false;
 DELETE FROM pagc_lex WHERE is_custom = false;
-DELETE FROM pagc_rules;
+DELETE FROM pagc_rules WHERE is_custom = false OR id < 10000;
 
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (1, 1, 'AB', 'ALBERTA', 11, false);
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (2, 2, 'AB', 'ALBERTA', 1, false);
@@ -79,11 +83,11 @@ INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (64, 2, '
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (66, 2, 'CONN', 'CONNECTICUT', 1, false);
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (69, 2, 'CONNECTICUT', 'CONNECTICUT', 1, false);
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (71, 2, 'CT', 'CONNECTICUT', 1, false);
-INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (74, 2, 'DC', 'DISTRICT OF COLUMBIA', 1, false);
+INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (74, 2, 'DC', 'DC', 1, false);
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (77, 3, 'DE', 'DELAWARE', 1, false);
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (79, 2, 'DEL', 'DELAWARE', 1, false);
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (82, 2, 'DELAWARE', 'DELAWARE', 1, false);
-INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (84, 2, 'DISTRICT OF COLUMBIA', 'DISTRICT OF COLUMBIA', 1, false);
+INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (84, 2, 'DC', 'DISTRICT OF COLUMBIA', 1, false);
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (85, 2, 'EL PASO', 'EL PASO', 1, false);
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (87, 2, 'FL', 'FLORIDA', 1, false);
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (90, 2, 'FLA', 'FLORIDA', 1, false);
@@ -701,7 +705,7 @@ INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (76, 1, '
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (78, 1, 'DEL', 'DE', 11, false);
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (80, 3, 'DEL', 'DE', 6, false);
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (81, 1, 'DELAWARE', 'DE', 11, false);
-INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (83, 1, 'DISTRICT OF COLUMBIA', 'DC', 11, false);
+INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (83, 1, 'DC', 'DC', 11, false);
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (86, 1, 'FL', 'FL', 11, false);
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (88, 3, 'FL', 'FL', 6, false);
 INSERT INTO pagc_gaz (id, seq, word, stdword, token, is_custom) VALUES (89, 1, 'FLA', 'FL', 11, false);
@@ -3811,11 +3815,14 @@ INSERT INTO pagc_lex (id, seq, word, stdword, token, is_custom) VALUES (2345, 2,
 INSERT INTO pagc_lex (id, seq, word, stdword, token, is_custom) VALUES (2353, 2, 'SQURE', 'SQ', 24, false);
 INSERT INTO pagc_lex (id, seq, word, stdword, token, is_custom) VALUES (2351, 2, 'SQUARE', 'SQ', 24, false);
 INSERT INTO pagc_lex (id, seq, word, stdword, token, is_custom) VALUES (2418, 2, 'STN', 'STA', 24, false);
+INSERT INTO pagc_lex (id, seq, word, stdword, token, is_custom) VALUES (2935, 2, 'NORTHWEST', 'NW', 22, false);
 
 
 SELECT pg_catalog.setval('pagc_lex_id_seq', (SELECT greatest((SELECT MAX(id) FROM pagc_lex),50000)), true);
 
 
+-- set default to false so all we input will be treated as no custom -- 
+ALTER TABLE tiger.pagc_rules ALTER COLUMN is_custom SET DEFAULT false;
 INSERT INTO pagc_rules (id, rule) VALUES (1, '1 -1 5 -1 2 7');
 INSERT INTO pagc_rules (id, rule) VALUES (2, '1 3 -1 5 3 -1 2 7');
 INSERT INTO pagc_rules (id, rule) VALUES (3, '1 22 -1 5 7 -1 2 7');
@@ -8167,6 +8174,12 @@ INSERT INTO pagc_rules (id, rule) VALUES (4348, '1 2 11 28 -1 10 10 11 13 -1 0 1
 INSERT INTO pagc_rules (id, rule) VALUES (4349, '1 2 11 28 12 -1 10 10 11 13 12 -1 0 17');
 INSERT INTO pagc_rules (id, rule) VALUES (4350, '1 2 11 28 29 -1 10 10 11 13 13 -1 0 16');
 INSERT INTO pagc_rules (id, rule) VALUES (4351, '1 2 11 28 29 12 -1 10 10 11 13 13 12 -1 0 17');
-INSERT INTO pagc_rules (id, rule) VALUES (4352, '-1');
+INSERT INTO pagc_rules (id, rule) values (4352, '16 0 22 -1 16 17 17 -1 4 7');
+INSERT INTO pagc_rules (id, rule) VALUES (4355, '-1');
 
+-- for some reason all rules are coming in as custom.  just force by id
+UPDATE tiger.pagc_rules SET is_custom = false where id < 10000;
+-- after insert we need to set back to true so all 
+-- user inputs are treated as custom 
+ALTER TABLE tiger.pagc_rules ALTER COLUMN is_custom SET DEFAULT true;
 SELECT pg_catalog.setval('pagc_rules_id_seq', 10000, true);
