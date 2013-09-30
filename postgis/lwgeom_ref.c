@@ -54,7 +54,7 @@ ref_object_t* serialize_ref_object( void *pgeom, bool nested, int type )
     else {
 	lwnotice("pass pointer of %s", ref_types[type].name );
 	ret = (ref_object_t*)lwalloc( sizeof(ref_object_t) );
-	SET_VARSIZE( ret, sizeof(void*)+4+1 );
+	SET_VARSIZE( ret, sizeof(ref_object_t) );
 	ret->ref_ptr = pgeom;
 	ret->ref_type = type;
     }
@@ -73,7 +73,7 @@ void* unserialize_ref_object( ref_object_t * ginput, int requested_type )
     rgeom = PG_DETOAST_DATUM( ginput );
 
     uint32_t s = VARSIZE(rgeom);
-    if ( s == sizeof(void*)+4+1 ) {
+    if ( s == sizeof(ref_object_t) ) {
 	lwnotice("it's a pointer");
 	if ( requested_type == -1 ) {
 	    lwnotice("forcing serialization");

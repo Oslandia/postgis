@@ -568,13 +568,19 @@ Datum sfcgal_test(PG_FUNCTION_ARGS)
 {
     ref_object_t *input0, *sgeom;
     sfcgal_prepared_geometry_t *pgeom0;
+    char *buffer;
+    size_t len;
 
+    lwnotice("_TEST");
     lwnotice("fcinfo: %p", fcinfo );
     lwnotice("fcinfo->nested: %d", fcinfo->nested ? 1 : 0 );
 
     input0 = (ref_object_t*)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
     lwnotice("arg size: %d", VARSIZE(input0) );
     pgeom0 = unserialize_ref_object( input0, REF_TYPE_SFCGALGEOMETRY );
+
+    sfcgal_prepared_geometry_as_ewkt( pgeom0, -1, &buffer, &len );
+    lwnotice( "geom: %s", buffer );
 
     sgeom = serialize_ref_object( pgeom0, fcinfo->nested, REF_TYPE_SFCGALGEOMETRY );
 
