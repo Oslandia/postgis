@@ -45,14 +45,13 @@ ref_object_t* serialize_ref_object( void *pgeom, bool nested, int type )
 {
     ref_object_t* ret;
 
-    lwnotice("nested: %d, pgeom: %p", nested ? 1 : 0, pgeom );
     if ( ! nested ) {
 	/* serialize */
-	lwnotice("serialize to GSERIALIZED from %s", ref_types[type].name );
+	lwnotice("[SERIALIZE] serialize to GSERIALIZED from '%s'", ref_types[type].name );
 	ret = (*ref_types[type].serialize_fn)( pgeom );
     }
     else {
-	lwnotice("pass pointer of %s", ref_types[type].name );
+	lwnotice("[SERIALIZE] no need to serialize, pass pointer of type '%s'", ref_types[type].name );
 	ret = (ref_object_t*)lwalloc( sizeof(ref_object_t) );
 	SET_VARSIZE( ret, sizeof(ref_object_t) );
 	ret->ref_ptr = pgeom;
@@ -74,20 +73,19 @@ void* unserialize_ref_object( ref_object_t * ginput, int requested_type )
 
     uint32_t s = VARSIZE(rgeom);
     if ( s == sizeof(ref_object_t) ) {
-	lwnotice("it's a pointer");
 	if ( requested_type == -1 ) {
-	    lwnotice("forcing serialization");
+	    lwnotice("[REF] forcing serialization");
 	    ret = (*ref_types[rgeom->ref_type].serialize_fn) (rgeom->ref_ptr);
 	}
 	else if ( rgeom->ref_type != requested_type ) {
-	    lwnotice("type conversion from %s to %s", ref_types[rgeom->ref_type].name, ref_types[requested_type].name);
+	    lwnotice("[REF] type conversion from '%s' to '%s'", ref_types[rgeom->ref_type].name, ref_types[requested_type].name);
 	    /* serialize the current pointer */
 	    GSERIALIZED* sobj = (*ref_types[rgeom->ref_type].serialize_fn) ( rgeom->ref_ptr );
 	    /* unserialize to the requested type */
 	    ret = (*ref_types[requested_type].deserialize_fn) ( sobj );
 	}
 	else {
-	    lwnotice("deserialize a pointer of type %s", ref_types[rgeom->ref_type].name );
+	    lwnotice("[REF] deserialize a pointer of type %s", ref_types[rgeom->ref_type].name );
 	    ret = rgeom->ref_ptr;
 	}
     }
@@ -96,7 +94,7 @@ void* unserialize_ref_object( ref_object_t * ginput, int requested_type )
 	    ret = rgeom;
 	}
 	else {
-	    lwnotice("deserialize to pointer of type %s", ref_types[requested_type].name );
+	    lwnotice("[REF] deserialize to pointer of type %s", ref_types[requested_type].name );
 	    ret = (*ref_types[requested_type].deserialize_fn) (rgeom);
 	    /* PG_FREE_IF_COPY equivalent */
 	    if ( ginput != rgeom ) {
@@ -105,6 +103,5 @@ void* unserialize_ref_object( ref_object_t * ginput, int requested_type )
 	}
     }
 
-    //    lwnotice("unserialized pgeom %p", ret );
     return ret;
 }
