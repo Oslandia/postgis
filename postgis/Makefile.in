@@ -99,6 +99,10 @@ PG_CPPFLAGS += @SFCGAL_CPPFLAGS@
 SHLIB_LINK_F += @SFCGAL_LDFLAGS@
 endif
 
+ifeq (@PG_KNOWS_NESTED_CALLS@,yes)
+PG_CPPFLAGS += -DPG_KNOWS_NESTED_CALLS
+endif
+
 # Extra files to remove during 'make clean'
 EXTRA_CLEAN=$(SQL_OBJS) \
 	uninstall_postgis.sql \

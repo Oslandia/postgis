@@ -424,6 +424,19 @@ esac
 
 AC_SUBST([PGSQL_BE_CPPFLAGS])
 
+dnl Check for support of information about nested calls
+CPPFLAGS_SAVE="$CPPFLAGS"
+CPPFLAGS="$PGSQL_BE_CPPFLAGS"
+AC_CHECK_HEADER([fmgr.h], [], [AC_MSG_ERROR([could not find fmgr.h])], [#include "postgres.h"])
+AC_CHECK_MEMBER([struct FunctionCallInfoData.nested],
+                        [PG_KNOWS_NESTED_CALLS=yes],
+                        [PG_KNOWS_NESTED_CALLS=no],
+                        [[#include "postgres.h"
+                          #include "fmgr.h"]])
+AC_SUBST([PG_KNOWS_NESTED_CALLS])
+CPPFLAGS="$CPPFLAGS_SAVE"
+
+
 dnl Extract the documentation and man page directories
 PGSQL_DOCDIR=`$PG_CONFIG --docdir`
 PGSQL_MANDIR=`$PG_CONFIG --mandir`
