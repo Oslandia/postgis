@@ -18,6 +18,7 @@
 
 #include "lwgeom_sfcgal.h"
 #include "lwgeom_ref.h"
+#include "lwgeom_log.h"
 
 text* cstring2text(const char *cstring);
 
@@ -227,7 +228,7 @@ Datum sfcgal_intersects(PG_FUNCTION_ARGS)
 	int result;
 	srid_t srid;
 
-	lwnotice("sfcgal intersects");
+	LWDEBUG(2, "sfcgal intersects");
 
 	sfcgal_postgis_init();
 
@@ -427,7 +428,7 @@ Datum sfcgal_intersection(PG_FUNCTION_ARGS)
 	sfcgal_geometry_t *result;
 	srid_t srid;
 
-	lwnotice("sfcgal intersection");
+	LWDEBUG(2, "sfcgal intersection");
 
 	sfcgal_postgis_init();
 
@@ -446,7 +447,7 @@ Datum sfcgal_intersection(PG_FUNCTION_ARGS)
 
 	presult = sfcgal_prepared_geometry_create_from_geometry( result, srid );
 
-        lwnotice("inside intersection nested: %d", PG_FUNCTION_NESTED ? 1:0);
+        LWDEBUGF(4,"inside intersection nested: %d", PG_FUNCTION_NESTED ? 1:0);
 	output = serialize_ref_object( presult, PG_FUNCTION_NESTED, REF_TYPE_SFCGALGEOMETRY );
 	PG_RETURN_POINTER(output);
 }
@@ -556,13 +557,13 @@ Datum sfcgal_test(PG_FUNCTION_ARGS)
     char *buffer;
     size_t len;
 
-    lwnotice("[TEST] fcinfo->nested: %d", PG_FUNCTION_NESTED ? 1 : 0 );
+    LWDEBUGF( 3, "[TEST] fcinfo->nested: %d", PG_FUNCTION_NESTED ? 1 : 0 );
 
     input0 = (ref_object_t*)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
     pgeom0 = unserialize_ref_object( input0, REF_TYPE_SFCGALGEOMETRY );
 
     sfcgal_prepared_geometry_as_ewkt( pgeom0, -1, &buffer, &len );
-    lwnotice( "[TEST] geom: %s", buffer );
+    LWDEBUGF( 3, "[TEST] geom: %s", buffer );
 
     sgeom = serialize_ref_object( pgeom0, PG_FUNCTION_NESTED, REF_TYPE_SFCGALGEOMETRY );
 

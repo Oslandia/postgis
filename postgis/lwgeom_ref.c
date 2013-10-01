@@ -14,6 +14,7 @@
 
 #include "lwgeom_ref.h"
 #include "lwgeom_sfcgal.h"
+#include "lwgeom_log.h"
 
 static GSERIALIZED* sfcgal_serialize( void *ptr );
 
@@ -47,11 +48,11 @@ ref_object_t* serialize_ref_object( void *pgeom, bool nested, int type )
 
     if ( ! nested ) {
 	/* serialize */
-	lwnotice("[SERIALIZE] serialize to GSERIALIZED from '%s'", ref_types[type].name );
-	ret = (*ref_types[type].serialize_fn)( pgeom );
+	LWDEBUGF( 4, "[SERIALIZE] serialize to GSERIALIZED from '%s'", ref_types[type].name );
+	ret = (ref_object_t*)(*ref_types[type].serialize_fn)( pgeom );
     }
     else {
-	lwnotice("[SERIALIZE] no need to serialize, pass pointer of type '%s'", ref_types[type].name );
+	LWDEBUGF( 4, "[SERIALIZE] no need to serialize, pass pointer of type '%s'", ref_types[type].name );
 	ret = (ref_object_t*)lwalloc( sizeof(ref_object_t) );
 	SET_VARSIZE( ret, sizeof(ref_object_t) );
 	ret->ref_ptr = pgeom;
@@ -68,24 +69,28 @@ void* unserialize_ref_object( ref_object_t * ginput, int requested_type )
 {
     void *ret;
     ref_object_t *rgeom;
+    uint32_t s;
+    int ref_type;
 
-    rgeom = PG_DETOAST_DATUM( ginput );
+    rgeom = (ref_object_t*)PG_DETOAST_DATUM( ginput );
 
-    uint32_t s = VARSIZE(rgeom);
+    s = VARSIZE(rgeom);
     if ( s == sizeof(ref_object_t) ) {
+        ref_type = rgeom->ref_type;
 	if ( requested_type == -1 ) {
-	    lwnotice("[REF] forcing serialization");
-	    ret = (*ref_types[rgeom->ref_type].serialize_fn) (rgeom->ref_ptr);
+	    LWDEBUGF( 4, "[REF] forcing serialization");
+	    ret = (*ref_types[ref_type].serialize_fn) (rgeom->ref_ptr);
 	}
 	else if ( rgeom->ref_type != requested_type ) {
-	    lwnotice("[REF] type conversion from '%s' to '%s'", ref_types[rgeom->ref_type].name, ref_types[requested_type].name);
+            GSERIALIZED *sobj;
+	    LWDEBUGF( 4, "[REF] type conversion from '%s' to '%s'", ref_types[ref_type].name, ref_types[requested_type].name);
 	    /* serialize the current pointer */
-	    GSERIALIZED* sobj = (*ref_types[rgeom->ref_type].serialize_fn) ( rgeom->ref_ptr );
+	    sobj = (*ref_types[ref_type].serialize_fn) ( rgeom->ref_ptr );
 	    /* unserialize to the requested type */
 	    ret = (*ref_types[requested_type].deserialize_fn) ( sobj );
 	}
 	else {
-	    lwnotice("[REF] deserialize a pointer of type %s", ref_types[rgeom->ref_type].name );
+	    LWDEBUGF( 4, "[REF] deserialize a pointer of type %s", ref_types[rgeom->ref_type].name );
 	    ret = rgeom->ref_ptr;
 	}
     }
@@ -94,8 +99,8 @@ void* unserialize_ref_object( ref_object_t * ginput, int requested_type )
 	    ret = rgeom;
 	}
 	else {
-	    lwnotice("[REF] deserialize to pointer of type %s", ref_types[requested_type].name );
-	    ret = (*ref_types[requested_type].deserialize_fn) (rgeom);
+	    LWDEBUGF( 4, "[REF] deserialize to pointer of type %s", ref_types[requested_type].name );
+	    ret = (*ref_types[requested_type].deserialize_fn) ((GSERIALIZED*)rgeom);
 	    /* PG_FREE_IF_COPY equivalent */
 	    if ( ginput != rgeom ) {
 		pfree( rgeom );
