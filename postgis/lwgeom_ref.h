@@ -14,6 +14,7 @@
 
 #include "postgres.h"
 #include "fmgr.h"
+#include "liblwgeom.h"
 
 #define REF_TYPE_SFCGALGEOMETRY  0
 #define REF_TYPE_GEOSGEOMETRY    1
@@ -36,8 +37,8 @@ typedef struct
     void *   ref_ptr;  /* the actual memory address of the underlying object */
 } ref_object_t;
 
-ref_object_t* serialize_ref_object( void * pgeom, bool nested, int type );
-void* unserialize_ref_object( ref_object_t * rgeom, int requested_type );
+GSERIALIZED* serialize_ref_object( void * pgeom, bool nested, int type );
+void* unserialize_ref_object( Datum rgeom, int requested_type );
 
 /**
  * DETOAST macro. It will detoast and unserialize the geometry back to a GSERIALIZED

@@ -42,23 +42,25 @@ struct ref_type_definition ref_types[NUM_REF_TYPES] = {
     }
 };
 
-ref_object_t* serialize_ref_object( void *pgeom, bool nested, int type )
+GSERIALIZED* serialize_ref_object( void *pgeom, bool nested, int type )
 {
-    ref_object_t* ret;
+    GSERIALIZED* ret;
+    ref_object_t* ref;
 
     if ( ! nested ) {
 	/* serialize */
 	LWDEBUGF( 4, "[SERIALIZE] serialize to GSERIALIZED from '%s'", ref_types[type].name );
-	ret = (ref_object_t*)(*ref_types[type].serialize_fn)( pgeom );
+	ret = (*ref_types[type].serialize_fn)( pgeom );
     }
     else {
 	LWDEBUGF( 4, "[SERIALIZE] no need to serialize, pass pointer of type '%s'", ref_types[type].name );
-	ret = (ref_object_t*)lwalloc( sizeof(ref_object_t) );
-	SET_VARSIZE( ret, sizeof(ref_object_t) );
-        ret->flags = 0;
-        FLAGS_SET_ISPOINTER( ret->flags, 1 );
-	ret->ref_ptr = pgeom;
-	ret->ref_type = type;
+	ref = (ref_object_t*)lwalloc( sizeof(ref_object_t) );
+	SET_VARSIZE( ref, sizeof(ref_object_t) );
+        ref->flags = 0;
+        FLAGS_SET_ISPOINTER( ref->flags, 1 );
+	ref->ref_ptr = pgeom;
+	ref->ref_type = type;
+        ret = (GSERIALIZED*)ref;
     }
 
     return ret;
@@ -67,7 +69,7 @@ ref_object_t* serialize_ref_object( void *pgeom, bool nested, int type )
 /*
  * ginput: Datum from PG_GETARG_DATUM(i)
  */
-void* unserialize_ref_object( ref_object_t * ginput, int requested_type )
+void* unserialize_ref_object( Datum ginput, int requested_type )
 {
     void *ret;
     ref_object_t *rgeom;
