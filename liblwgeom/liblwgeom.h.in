@@ -100,8 +100,8 @@
 
 /**
 * Macros for manipulating the 'flags' byte. A uint8_t used as follows: 
-* ---RGBMZ
-* Three unused bits, followed by ReadOnly, Geodetic, HasBBox, HasM and HasZ flags.
+* -PSRGBMZ
+* One unused bit, followed by IsPointer, IsSolid, ReadOnly, Geodetic, HasBBox, HasM and HasZ flags.
 */
 #define FLAGS_GET_Z(flags) ((flags) & 0x01)
 #define FLAGS_GET_M(flags) (((flags) & 0x02)>>1)
@@ -109,12 +109,14 @@
 #define FLAGS_GET_GEODETIC(flags) (((flags) & 0x08)>>3)
 #define FLAGS_GET_READONLY(flags) (((flags) & 0x10)>>4)
 #define FLAGS_GET_SOLID(flags) (((flags) & 0x20)>>5)
+#define FLAGS_GET_ISPOINTER(flags) (((flags) & 0x40)>>6)
 #define FLAGS_SET_Z(flags, value) ((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
 #define FLAGS_SET_M(flags, value) ((flags) = (value) ? ((flags) | 0x02) : ((flags) & 0xFD))
 #define FLAGS_SET_BBOX(flags, value) ((flags) = (value) ? ((flags) | 0x04) : ((flags) & 0xFB))
 #define FLAGS_SET_GEODETIC(flags, value) ((flags) = (value) ? ((flags) | 0x08) : ((flags) & 0xF7))
 #define FLAGS_SET_READONLY(flags, value) ((flags) = (value) ? ((flags) | 0x10) : ((flags) & 0xEF))
 #define FLAGS_SET_SOLID(flags, value) ((flags) = (value) ? ((flags) | 0x20) : ((flags) & 0xDF))
+#define FLAGS_SET_ISPOINTER(flags, value) ((flags) = (value) ? ((flags) | 0x40) : ((flags) & 0xBF))
 #define FLAGS_NDIMS(flags) (2 + FLAGS_GET_Z(flags) + FLAGS_GET_M(flags))
 #define FLAGS_GET_ZM(flags) (FLAGS_GET_M(flags) + FLAGS_GET_Z(flags) * 2)
 #define FLAGS_NDIMS_BOX(flags) (FLAGS_GET_GEODETIC(flags) ? 3 : FLAGS_NDIMS(flags))

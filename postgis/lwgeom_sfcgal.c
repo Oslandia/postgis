@@ -42,6 +42,8 @@ Datum sfcgal_triangulate(PG_FUNCTION_ARGS);
 Datum sfcgal_tesselate(PG_FUNCTION_ARGS);
 Datum sfcgal_minkowski_sum(PG_FUNCTION_ARGS);
 
+Datum sfcgal_test(PG_FUNCTION_ARGS);
+
 
 GSERIALIZED *geometry_serialize(LWGEOM *lwgeom);
 char* text2cstring(const text *textptr);
@@ -232,8 +234,8 @@ Datum sfcgal_intersects(PG_FUNCTION_ARGS)
 
 	sfcgal_postgis_init();
 
-	pgeom0 = (sfcgal_prepared_geometry_t *)unserialize_ref_object( PG_GETARG_DATUM(0), REF_TYPE_SFCGALGEOMETRY );
-	pgeom1 = (sfcgal_prepared_geometry_t *)unserialize_ref_object( PG_GETARG_DATUM(1), REF_TYPE_SFCGALGEOMETRY );
+	pgeom0 = (sfcgal_prepared_geometry_t *)unserialize_ref_object( (ref_object_t*)PG_GETARG_DATUM(0), REF_TYPE_SFCGALGEOMETRY );
+	pgeom1 = (sfcgal_prepared_geometry_t *)unserialize_ref_object( (ref_object_t*)PG_GETARG_DATUM(1), REF_TYPE_SFCGALGEOMETRY );
 
 	geom0 = sfcgal_prepared_geometry_geometry( pgeom0 );
 	geom1 = sfcgal_prepared_geometry_geometry( pgeom1 );
@@ -432,8 +434,8 @@ Datum sfcgal_intersection(PG_FUNCTION_ARGS)
 
 	sfcgal_postgis_init();
 
-	pgeom0 = (sfcgal_prepared_geometry_t *)unserialize_ref_object( PG_GETARG_DATUM(0), REF_TYPE_SFCGALGEOMETRY );
-	pgeom1 = (sfcgal_prepared_geometry_t *)unserialize_ref_object( PG_GETARG_DATUM(1), REF_TYPE_SFCGALGEOMETRY );
+	pgeom0 = (sfcgal_prepared_geometry_t *)unserialize_ref_object( (ref_object_t*)PG_GETARG_DATUM(0), REF_TYPE_SFCGALGEOMETRY );
+	pgeom1 = (sfcgal_prepared_geometry_t *)unserialize_ref_object( (ref_object_t*)PG_GETARG_DATUM(1), REF_TYPE_SFCGALGEOMETRY );
 
 	srid = sfcgal_prepared_geometry_srid( pgeom0 );
 

@@ -25,15 +25,15 @@
  * Referenced geometries
  *
  * This structure is a varlena.
- * If size is greater than the minimum GSERIALIZED size (16), then it's a GSERIALIZED,
- * else it is a referenced geometry
+ * It is based on GSERIALIZED with a special flag
  */
 typedef struct
 {
     uint32_t size;
-    char ref_type;
-    void* ref_ptr;
-    /* we have 3 bytes left here for possible extra information */
+    uint8_t  srid[3];  /* always 0 for a ref_object */
+    uint8_t  flags;    /* always FLAG_GET_ISPOINTER == 1 */
+    uint8_t  ref_type; /* type of the object */
+    void *   ref_ptr;  /* the actual memory address of the underlying object */
 } ref_object_t;
 
 ref_object_t* serialize_ref_object( void * pgeom, bool nested, int type );

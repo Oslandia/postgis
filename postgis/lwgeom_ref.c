@@ -55,6 +55,8 @@ ref_object_t* serialize_ref_object( void *pgeom, bool nested, int type )
 	LWDEBUGF( 4, "[SERIALIZE] no need to serialize, pass pointer of type '%s'", ref_types[type].name );
 	ret = (ref_object_t*)lwalloc( sizeof(ref_object_t) );
 	SET_VARSIZE( ret, sizeof(ref_object_t) );
+        ret->flags = 0;
+        FLAGS_SET_ISPOINTER( ret->flags, 1 );
 	ret->ref_ptr = pgeom;
 	ret->ref_type = type;
     }
@@ -69,13 +71,11 @@ void* unserialize_ref_object( ref_object_t * ginput, int requested_type )
 {
     void *ret;
     ref_object_t *rgeom;
-    uint32_t s;
     int ref_type;
 
     rgeom = (ref_object_t*)PG_DETOAST_DATUM( ginput );
 
-    s = VARSIZE(rgeom);
-    if ( s == sizeof(ref_object_t) ) {
+    if ( FLAGS_GET_ISPOINTER( rgeom->flags ) ) {
         ref_type = rgeom->ref_type;
 	if ( requested_type == -1 ) {
 	    LWDEBUGF( 4, "[REF] forcing serialization");
