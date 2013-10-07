@@ -12,15 +12,17 @@
  *
  **********************************************************************/
 
-#include "postgres.h"
-#include "fmgr.h"
-#include "liblwgeom.h"
+#include "lwgeom_pg.h"
+//#include "postgres.h"
+//#include "fmgr.h"
+//#include "liblwgeom.h"
 
 #define REF_TYPE_SFCGALGEOMETRY  0
-#define REF_TYPE_GEOSGEOMETRY    1
-#define REF_TYPE_RASTER          2
+#define REF_TYPE_LWGEOM          1
+#define REF_TYPE_GEOSGEOMETRY    2
+#define REF_TYPE_RASTER          3
 
-#define NUM_REF_TYPES            1
+#define NUM_REF_TYPES            2
 
 /**
  * Referenced geometries

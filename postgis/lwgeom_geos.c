@@ -29,6 +29,7 @@
 #include "liblwgeom_internal.h"
 #include "lwgeom_rtree.h"
 #include "lwgeom_geos_prepared.h" 
+#include "lwgeom_ref.h"
 
 
 #include <string.h>
@@ -259,6 +260,7 @@ Datum pgis_union_geometry_array(PG_FUNCTION_ARGS)
 	int bitmask;
 	int empty_type = 0;
 
+        lwnotice("union");
 	datum = PG_GETARG_DATUM(0);
 
 	/* Null array, null geometry (should be empty?) */
@@ -282,7 +284,10 @@ Datum pgis_union_geometry_array(PG_FUNCTION_ARGS)
 		if (bitmap && (*bitmap & 1) == 0)
 			PG_RETURN_NULL();
 		else
-			PG_RETURN_POINTER((GSERIALIZED *)(ARR_DATA_PTR(array)));
+                {
+                    PG_RETURN_POINTER( (GSERIALIZED*) unserialize_ref_object( ARR_DATA_PTR(array), -1 ));
+                    //			PG_RETURN_POINTER((GSERIALIZED *)(ARR_DATA_PTR(array)));
+                }
 	}
 
 	/* Ok, we really need GEOS now ;) */
@@ -1085,10 +1090,10 @@ Datum topologypreservesimplify(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(buffer);
 Datum buffer(PG_FUNCTION_ARGS)
 {
-	GSERIALIZED	*geom1;
+    //	GSERIALIZED	*geom1;
 	double	size;
 	GEOSGeometry *g1, *g3;
-	GSERIALIZED *result;
+        //	GSERIALIZED *result;
 	int quadsegs = 8; /* the default */
 	int nargs;
 	enum
@@ -1113,10 +1118,17 @@ Datum buffer(PG_FUNCTION_ARGS)
 	char *param;
 	char *params = NULL;
 	LWGEOM *lwg;
+        ref_object_t *rresult;
 
+        lwnotice("buffer");
+#if 0
 	geom1 = (GSERIALIZED *)  PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+#else
+        lwg = unserialize_ref_object( PG_GETARG_DATUM(0), REF_TYPE_LWGEOM );
+#endif
 	size = PG_GETARG_FLOAT8(1);
 
+#if 0
 	/* Empty.Buffer() == Empty[polygon] */
 	if ( gserialized_is_empty(geom1) )
 	{
@@ -1125,12 +1137,17 @@ Datum buffer(PG_FUNCTION_ARGS)
 		        0, 0)); // buffer wouldn't give back z or m anyway
 		PG_RETURN_POINTER(geometry_serialize(lwg));
 	}
+#endif
 
 	nargs = PG_NARGS();
 
 	initGEOS(lwnotice, lwgeom_geos_error);
 
+#if 0
 	g1 = (GEOSGeometry *)POSTGIS2GEOS(geom1);
+#else
+        g1 = (GEOSGeometry *)LWGEOM2GEOS(lwg);
+#endif
 	if ( 0 == g1 )   /* exception thrown at construction */
 	{
 		lwerror("First argument geometry could not be converted to GEOS: %s", lwgeom_geos_errmsg);
@@ -1277,6 +1294,16 @@ Datum buffer(PG_FUNCTION_ARGS)
 
 	POSTGIS_DEBUGF(3, "result: %s", GEOSGeomToWKT(g3));
 
+#if 1
+        GEOSSetSRID(g3, GEOSGetSRID(g1));
+        {
+            LWGEOM* rlwg;
+            rlwg = GEOS2LWGEOM(g3, /*FIXME*/0);
+            rresult = serialize_ref_object( rlwg, PG_FUNCTION_NESTED, REF_TYPE_LWGEOM );
+        }
+	GEOSGeom_destroy(g3);
+        PG_RETURN_POINTER( rresult );
+#else
 	GEOSSetSRID(g3, gserialized_get_srid(geom1));
 
 	result = GEOS2POSTGIS(g3, gserialized_has_z(geom1));
@@ -1290,6 +1317,7 @@ Datum buffer(PG_FUNCTION_ARGS)
 
 	PG_FREE_IF_COPY(geom1, 0);
 	PG_RETURN_POINTER(result);
+#endif
 }
 
 /*
@@ -1447,26 +1475,37 @@ Datum ST_OffsetCurve(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(geos_intersection);
 Datum geos_intersection(PG_FUNCTION_ARGS)
 {
+#if 0
 	GSERIALIZED *geom1;
 	GSERIALIZED *geom2;
 	GSERIALIZED *result;
+#endif
 	LWGEOM *lwgeom1, *lwgeom2, *lwresult ;
+        ref_object_t* result;
 
+        lwnotice("intersection");
+#if 0
 	geom1 = (GSERIALIZED *)  PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
 	geom2 = (GSERIALIZED *)  PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
 
 	lwgeom1 = lwgeom_from_gserialized(geom1) ;
 	lwgeom2 = lwgeom_from_gserialized(geom2) ;
+#endif
+        lwgeom1 = unserialize_ref_object( PG_GETARG_DATUM(0), REF_TYPE_LWGEOM );
+        lwgeom2 = unserialize_ref_object( PG_GETARG_DATUM(1), REF_TYPE_LWGEOM );
 
 	lwresult = lwgeom_intersection(lwgeom1, lwgeom2) ;
-	result = geometry_serialize(lwresult) ;
+        //	result = geometry_serialize(lwresult) ;
+        result = serialize_ref_object( lwresult, PG_FUNCTION_NESTED, REF_TYPE_LWGEOM );
 
 	lwgeom_free(lwgeom1) ;
 	lwgeom_free(lwgeom2) ;
+#if 0
 	lwgeom_free(lwresult) ;
 
 	PG_FREE_IF_COPY(geom1, 0);
 	PG_FREE_IF_COPY(geom2, 1);
+#endif
 
 	PG_RETURN_POINTER(result);
 }

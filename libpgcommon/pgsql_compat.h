@@ -10,7 +10,6 @@
 #if POSTGIS_PGSQL_VERSION < 82
 #define ARR_OVERHEAD_NONULLS(x) ARR_OVERHEAD((x))
 #endif
-
 /* PostgreSQL < 8.3 uses VARATT_SIZEP rather than SET_VARSIZE for varlena types */
 #if POSTGIS_PGSQL_VERSION < 83
 #define SET_VARSIZE(var, size)   VARATT_SIZEP(var) = size
